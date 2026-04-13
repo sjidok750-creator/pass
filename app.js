@@ -7,7 +7,7 @@
 // ─── Firebase ────────────────────────────────────
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 import {
-  getAuth, signInAnonymously, onAuthStateChanged, signOut
+  getAuth, signInAnonymously, onAuthStateChanged
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 import {
   getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
@@ -98,8 +98,6 @@ const loginOverlay = $('loginOverlay');
 const loginPwInput = $('loginPwInput');
 const btnLoginSubmit = $('btnLoginSubmit');
 const loginError = $('loginError');
-const btnLogout = $('btnLogout');
-
 const APP_PIN = '1235';
 
 // ─── Utils ────────────────────────────────────────
@@ -213,10 +211,6 @@ loginPwInput.addEventListener('keydown', e => {
   if (e.key === 'Enter') tryLogin();
 });
 
-btnLogout.addEventListener('click', async () => {
-  sessionStorage.removeItem('passnote_unlocked');
-  await signOut(auth);
-});
 
 // ─── Firestore ────────────────────────────────────
 function passwordsCol() {
@@ -227,7 +221,7 @@ function listenPasswords() {
   if (unsubscribe) unsubscribe();
   unsubscribe = onSnapshot(passwordsCol(), (snap) => {
     passwords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    passwords.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+    passwords.sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
     render();
   }, (err) => {
     console.error('Firestore error:', err);
@@ -506,6 +500,7 @@ function openModal(id) {
   modalUrl.textContent      = p.url || `${p.category} · ${formatDate(p.createdAt)}`;
   modalUsername.textContent = p.username || '—';
   modalPassword.textContent = p.password;
+  $('modalUpdated').textContent = formatDate(p.updatedAt || p.createdAt);
 
   if (p.note) {
     modalNote.textContent      = p.note;
@@ -546,15 +541,51 @@ async function copyText(text, label) {
   showToast(label + ' ✓');
 }
 
-// ─── Export ───────────────────────────────────────
+// ─── Export PDF ───────────────────────────────────
 function exportData() {
-  const data = passwords.map(p => ({ ...p, photo: p.photo ? '[photo]' : null }));
-  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-  const url  = URL.createObjectURL(blob);
-  const a    = document.createElement('a');
-  a.href = url; a.download = `passnote_${new Date().toISOString().slice(0,10)}.json`;
-  a.click(); URL.revokeObjectURL(url);
-  showToast('Export complete ✓');
+  const now = new Date();
+  const yy = String(now.getFullYear()).slice(2);
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const dd = String(now.getDate()).padStart(2, '0');
+  const filename = `pass${yy}${mm}${dd}.pdf`;
+
+  // Build PDF content as HTML table
+  let rows = '';
+  passwords.forEach(p => {
+    rows += `<tr>
+      <td>${escHtml(p.service)}</td>
+      <td>${escHtml(p.category || '')}</td>
+      <td>${escHtml(p.username || '')}</td>
+      <td>${escHtml(p.password)}</td>
+      <td>${formatDate(p.updatedAt || p.createdAt)}</td>
+    </tr>`;
+  });
+
+  const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+    <style>
+      body { font-family: 'Pretendard', sans-serif; padding: 20px; font-size: 11px; }
+      h2 { font-size: 16px; margin-bottom: 12px; }
+      table { width: 100%; border-collapse: collapse; }
+      th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+      th { background: #f2f2f2; font-weight: 600; }
+      td:nth-child(4) { font-family: monospace; color: #d93030; }
+    </style>
+  </head><body>
+    <h2>PassNote — ${yy}.${mm}.${dd}</h2>
+    <table>
+      <thead><tr><th>Name</th><th>Type</th><th>ID / Email</th><th>Password</th><th>Updated</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </body></html>`;
+
+  const printWin = window.open('', '_blank', 'width=800,height=600');
+  printWin.document.write(html);
+  printWin.document.close();
+  printWin.onload = () => {
+    printWin.document.title = filename;
+    printWin.print();
+  };
+  showToast('PDF export ✓');
 }
 
 // ─── Events ───────────────────────────────────────
