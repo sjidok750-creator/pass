@@ -219,8 +219,9 @@ catPickerGrid.addEventListener('click', e => {
   const item = e.target.closest('.cat-pick-item');
   if (!item) return;
   const cat = item.dataset.cat;
-  closeCatPicker();
-  if (catPickerOverlay._callback) catPickerOverlay._callback(cat);
+  const cb = catPickerOverlay._callback;  // 먼저 저장
+  closeCatPicker();                        // 그 다음 닫기
+  if (cb) cb(cat);                         // 저장해둔 콜백 실행
 });
 
 catPickerClose.addEventListener('click', closeCatPicker);
