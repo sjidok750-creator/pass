@@ -185,14 +185,22 @@ function hideLogin() {
   document.querySelector('.search-bar-wrap').style.display = '';
 }
 
-function tryLogin() {
+async function tryLogin() {
   const val = loginPwInput.value.trim();
   if (val === APP_PIN) {
     loginError.style.display = 'none';
-    signInAnonymously(auth).catch(e => {
+    try {
+      if (currentUser) {
+        // Already signed in anonymously (cached), just unlock
+        unlockApp(currentUser);
+      } else {
+        const cred = await signInAnonymously(auth);
+        unlockApp(cred.user);
+      }
+    } catch (e) {
       console.error(e);
       showToast('Auth error');
-    });
+    }
   } else {
     loginError.style.display = '';
     loginPwInput.value = '';
@@ -206,9 +214,8 @@ loginPwInput.addEventListener('keydown', e => {
 });
 
 btnLogout.addEventListener('click', async () => {
-  if (confirm('Logout?')) {
-    await signOut(auth);
-  }
+  sessionStorage.removeItem('passnote_unlocked');
+  await signOut(auth);
 });
 
 // ─── Firestore ────────────────────────────────────
@@ -292,15 +299,27 @@ async function migrateLocalData() {
 }
 
 // ─── Auth state listener ──────────────────────────
+function unlockApp(user) {
+  currentUser = user;
+  sessionStorage.setItem('passnote_unlocked', '1');
+  hideLogin();
+  listenPasswords();
+  setTimeout(() => migrateLocalData(), 1500);
+}
+
 onAuthStateChanged(auth, (user) => {
   if (user) {
-    currentUser = user;
-    hideLogin();
-    listenPasswords();
-    // migrate old localStorage data
-    setTimeout(() => migrateLocalData(), 1500);
+    // Already unlocked this session?
+    if (sessionStorage.getItem('passnote_unlocked') === '1') {
+      unlockApp(user);
+    } else {
+      // Auth cached but PIN not entered yet — show login
+      currentUser = user;
+      showLogin();
+    }
   } else {
     currentUser = null;
+    sessionStorage.removeItem('passnote_unlocked');
     if (unsubscribe) { unsubscribe(); unsubscribe = null; }
     passwords = [];
     render();
