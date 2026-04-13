@@ -319,27 +319,26 @@ input, textarea {
   padding: 40px 24px; text-align: center;
 }
 
-.empty-icon { margin-bottom: 18px; opacity: .4; }
-
 .empty-title {
   font-size: 17px; font-weight: 700;
   font-family: var(--font-mono); color: var(--text-2);
-  margin-bottom: 7px;
+  margin-bottom: 12px;
 }
 
-.empty-desc { font-size: 13.5px; color: var(--text-3); line-height: 1.7; }
-
-.empty-cta {
-  margin-top: 22px; height: 46px; padding: 0 24px;
+.empty-tap {
+  font-size: 15px; color: var(--text-3);
+  line-height: 1.7;
+  padding: 20px 40px;
   border-radius: var(--r-md);
-  background: var(--accent); color: white;
-  font-size: 14px; font-weight: 700;
-  font-family: var(--font-mono);
-  box-shadow: 0 4px 18px rgba(217,30,53,.28);
-  letter-spacing: .3px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+  transition: all .15s;
 }
 
-.empty-cta:active { background: var(--red-700); }
+.empty-tap:active {
+  background: var(--gray-100);
+  color: var(--accent);
+}
 
 /* ── Search bar ──────────────────────────── */
 .search-bar-wrap {

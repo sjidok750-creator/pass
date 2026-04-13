@@ -55,17 +55,8 @@
   <main class="main" id="mainScroll">
     <div class="pw-list" id="pwList"></div>
     <div class="empty-state" id="emptyState">
-      <div class="empty-icon">
-        <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-          <rect x="10" y="22" width="44" height="32" rx="9" stroke="#dde1e9" stroke-width="2.2"/>
-          <path d="M22 22V17a10 10 0 0 1 20 0v5" stroke="#dde1e9" stroke-width="2.2" stroke-linecap="round"/>
-          <circle cx="32" cy="38" r="4" stroke="#dde1e9" stroke-width="2.2"/>
-          <path d="M32 42v5" stroke="#dde1e9" stroke-width="2.2" stroke-linecap="round"/>
-        </svg>
-      </div>
       <p class="empty-title">No passwords yet</p>
-      <p class="empty-desc">Tap <strong>+</strong> to add your first entry</p>
-      <button class="empty-cta" id="emptyAddBtn">+ Add Entry</button>
+      <p class="empty-desc empty-tap" id="emptyAddBtn">Touch here to add</p>
     </div>
   </main>
 
@@ -135,7 +126,7 @@
         <div class="form-field">
           <label class="field-label" for="inputService">Name</label>
           <input type="text" class="field-input" id="inputService"
-            placeholder="서비스 또는 앱 이름" autocomplete="off" />
+            placeholder="기억하기 쉬운 이름으로" autocomplete="off" />
         </div>
 
         <!-- ③ 아이디 -->
