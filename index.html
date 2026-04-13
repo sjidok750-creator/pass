@@ -33,11 +33,11 @@
       <div class="header-actions">
         <button class="btn-header" id="btnExport" title="내보내기">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M5 7l3 3 3-3M2 11v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span>내보내기</span>
+          <span>Export</span>
         </button>
         <button class="btn-header btn-header-primary" id="btnAdd" title="새 항목 추가">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <span>새 항목</span>
+          <span>New</span>
         </button>
       </div>
     </div>
@@ -51,10 +51,13 @@
     <section class="form-panel" id="formPanel">
       <div class="panel-header">
         <div class="panel-header-left">
-          <div class="panel-icon">
+          <div class="panel-icon" id="formPanelIcon">
             <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="5" width="16" height="10" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M6 5V4a3 3 0 0 1 6 0v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="10" r="1.5" fill="currentColor"/></svg>
           </div>
-          <span class="panel-title" id="formTitle">새 비밀번호 추가</span>
+          <div class="panel-title-group">
+            <span class="panel-title" id="formTitle">New Entry</span>
+            <span class="panel-cat-label" id="formCatLabel"></span>
+          </div>
         </div>
         <button class="panel-close" id="btnCloseForm">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -63,19 +66,20 @@
 
       <div class="form-body">
         <input type="hidden" id="editId" value="" />
+        <input type="hidden" id="editCategory" value="" />
 
         <div class="form-row">
-          <label class="form-label">서비스명 <span class="required">*</span></label>
+          <label class="form-label">Name <span class="required">*</span></label>
           <div class="input-wrap">
             <div class="input-icon">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 5h5M4.5 7.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             </div>
-            <input type="text" class="form-input" id="inputService" placeholder="예: Google, GitHub, Netflix" />
+            <input type="text" class="form-input" id="inputService" placeholder="Service or app name" />
           </div>
         </div>
 
         <div class="form-row">
-          <label class="form-label">URL / 앱</label>
+          <label class="form-label">URL / App</label>
           <div class="input-wrap">
             <div class="input-icon">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 7h11M7 1.5C5.5 3.5 5 5.5 5 7s.5 3.5 2 5.5M7 1.5C8.5 3.5 9 5.5 9 7s-.5 3.5-2 5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -85,7 +89,7 @@
         </div>
 
         <div class="form-row">
-          <label class="form-label">아이디 / 이메일</label>
+          <label class="form-label">ID / Email</label>
           <div class="input-wrap">
             <div class="input-icon">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 12c0-2.8 2.2-4.5 5-4.5s5 1.7 5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
@@ -95,13 +99,13 @@
         </div>
 
         <div class="form-row">
-          <label class="form-label">비밀번호 <span class="required">*</span></label>
+          <label class="form-label">Password <span class="required">*</span></label>
           <div class="input-wrap">
             <div class="input-icon">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="6" width="10" height="6.5" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="9" r="1" fill="currentColor"/></svg>
             </div>
-            <input type="password" class="form-input" id="inputPassword" placeholder="비밀번호를 입력하세요" />
-            <button class="input-btn-end" id="btnTogglePw" title="보기/숨기기">
+            <input type="password" class="form-input" id="inputPassword" placeholder="Enter password" />
+            <button class="input-btn-end" id="btnTogglePw" title="Show/Hide">
               <svg class="eye-open" width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 7.5S3.5 3 7.5 3 14 7.5 14 7.5 11.5 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.3"/><circle cx="7.5" cy="7.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
               <svg class="eye-closed" width="15" height="15" viewBox="0 0 15 15" fill="none" style="display:none"><path d="M2 2l11 11M6.3 5.8A3 3 0 0 1 10.2 9.7M4 4.4C2.3 5.5 1 7.5 1 7.5s2.5 4.5 6.5 4.5c1 0 2-.3 2.8-.7M5.5 3.5C6.1 3.2 6.8 3 7.5 3c4 0 6.5 4.5 6.5 4.5s-.6 1.1-1.7 2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             </button>
@@ -115,29 +119,17 @@
         </div>
 
         <div class="form-row">
-          <label class="form-label">메모</label>
+          <label class="form-label">Note</label>
           <div class="input-wrap textarea-wrap">
-            <textarea class="form-input form-textarea" id="inputNote" placeholder="추가 정보나 메모를 입력하세요" rows="3"></textarea>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <label class="form-label">카테고리</label>
-          <div class="category-chips" id="categoryChips">
-            <button class="chip active" data-cat="일반">일반</button>
-            <button class="chip" data-cat="소셜">소셜</button>
-            <button class="chip" data-cat="금융">금융</button>
-            <button class="chip" data-cat="업무">업무</button>
-            <button class="chip" data-cat="쇼핑">쇼핑</button>
-            <button class="chip" data-cat="게임">게임</button>
+            <textarea class="form-input form-textarea" id="inputNote" placeholder="Additional info or memo" rows="3"></textarea>
           </div>
         </div>
 
         <div class="form-actions">
-          <button class="btn-cancel" id="btnCancel">취소</button>
+          <button class="btn-cancel" id="btnCancel">Cancel</button>
           <button class="btn-save" id="btnSave">
             <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            저장
+            Save
           </button>
         </div>
       </div>
@@ -149,46 +141,53 @@
       <div class="stats-bar">
         <div class="stat-item">
           <span class="stat-num" id="statTotal">0</span>
-          <span class="stat-label">전체</span>
+          <span class="stat-label">Total</span>
         </div>
         <div class="stat-divider"></div>
         <div class="stat-item">
           <span class="stat-num" id="statCategory">0</span>
-          <span class="stat-label" id="statCategoryLabel">카테고리</span>
+          <span class="stat-label" id="statCategoryLabel">Categories</span>
         </div>
         <div class="stat-divider"></div>
-        <div class="stat-item stat-item-warn" id="statWeak">
+        <div class="stat-item stat-item-warn" id="statWeak" style="display:none">
           <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5l5 9.5H1.5l5-9.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 5v2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="6.5" cy="9" r=".6" fill="currentColor"/></svg>
           <span class="stat-num" id="statWeakNum">0</span>
-          <span class="stat-label">약한 비밀번호</span>
+          <span class="stat-label">Weak</span>
         </div>
       </div>
 
       <!-- FILTER TABS -->
       <div class="filter-tabs" id="filterTabs">
-        <button class="filter-tab active" data-filter="전체">전체</button>
-        <button class="filter-tab" data-filter="일반">일반</button>
-        <button class="filter-tab" data-filter="소셜">소셜</button>
-        <button class="filter-tab" data-filter="금융">금융</button>
-        <button class="filter-tab" data-filter="업무">업무</button>
-        <button class="filter-tab" data-filter="쇼핑">쇼핑</button>
-        <button class="filter-tab" data-filter="게임">게임</button>
+        <button class="filter-tab active" data-filter="All">All</button>
+        <button class="filter-tab" data-filter="Finance">Finance</button>
+        <button class="filter-tab" data-filter="Website">Website</button>
+        <button class="filter-tab" data-filter="Shopping">Shopping</button>
+        <button class="filter-tab" data-filter="Game">Game</button>
+        <button class="filter-tab" data-filter="Coding">Coding</button>
+        <button class="filter-tab" data-filter="Social">Social</button>
+        <button class="filter-tab" data-filter="Other">Other</button>
       </div>
 
       <!-- PASSWORD LIST -->
-      <div class="pw-list" id="pwList">
-        <!-- dynamically rendered -->
-      </div>
+      <div class="pw-list" id="pwList"></div>
 
       <!-- EMPTY STATE -->
-      <div class="empty-state" id="emptyState" style="display:none">
+      <div class="empty-state" id="emptyState">
         <div class="empty-icon">
-          <svg width="56" height="56" viewBox="0 0 56 56" fill="none"><rect x="8" y="18" width="40" height="28" rx="7" stroke="#d1d5db" stroke-width="2"/><path d="M18 18V14a10 10 0 0 1 20 0v4" stroke="#d1d5db" stroke-width="2" stroke-linecap="round"/><circle cx="28" cy="32" r="4" stroke="#d1d5db" stroke-width="2"/><path d="M28 36v4" stroke="#d1d5db" stroke-width="2" stroke-linecap="round"/></svg>
+          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+            <rect x="10" y="22" width="44" height="32" rx="8" stroke="#dde1e9" stroke-width="2"/>
+            <path d="M20 22V18a12 12 0 0 1 24 0v4" stroke="#dde1e9" stroke-width="2" stroke-linecap="round"/>
+            <circle cx="32" cy="38" r="4" stroke="#dde1e9" stroke-width="2"/>
+            <path d="M32 42v5" stroke="#dde1e9" stroke-width="2" stroke-linecap="round"/>
+          </svg>
         </div>
-        <p class="empty-title">저장된 비밀번호가 없습니다</p>
-        <p class="empty-desc">우측 상단의 <strong>새 항목</strong> 버튼으로 추가하세요</p>
+        <p class="empty-title">No passwords saved</p>
+        <p class="empty-desc">Click the <strong>+</strong> area below or press <strong>New</strong> to add your first entry</p>
+        <button class="empty-cta" id="emptyAddBtn">
+          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Add Entry
+        </button>
       </div>
-
     </section>
   </main>
 
@@ -198,7 +197,7 @@
       <div class="search-icon">
         <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><circle cx="7.5" cy="7.5" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11.5 11.5L15 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
       </div>
-      <input type="text" class="search-input" id="searchInput" placeholder="서비스명, 아이디, URL 검색..." />
+      <input type="text" class="search-input" id="searchInput" placeholder="Search by name, ID, URL..." />
       <div class="search-kbd"><kbd>⌘</kbd><kbd>K</kbd></div>
       <button class="search-clear" id="searchClear" style="display:none">
         <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
@@ -209,6 +208,21 @@
 
   <!-- TOAST -->
   <div class="toast" id="toast"></div>
+
+  <!-- CATEGORY PICKER MODAL -->
+  <div class="modal-overlay" id="catPickerOverlay">
+    <div class="cat-picker-modal" id="catPickerModal">
+      <div class="cat-picker-header">
+        <span class="cat-picker-title">Choose Category</span>
+        <button class="modal-close" id="catPickerClose">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cat-picker-grid" id="catPickerGrid">
+        <!-- rendered by JS -->
+      </div>
+    </div>
+  </div>
 
   <!-- DETAIL MODAL -->
   <div class="modal-overlay" id="modalOverlay">
@@ -225,50 +239,50 @@
       </div>
       <div class="modal-body">
         <div class="modal-field">
-          <span class="modal-field-label">아이디 / 이메일</span>
+          <span class="modal-field-label">ID / Email</span>
           <div class="modal-field-row">
             <span class="modal-field-value" id="modalUsername">—</span>
             <button class="btn-copy" data-target="username">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              복사
+              Copy
             </button>
           </div>
         </div>
         <div class="modal-field">
-          <span class="modal-field-label">비밀번호</span>
+          <span class="modal-field-label">Password</span>
           <div class="modal-field-row">
             <span class="modal-field-value modal-pw" id="modalPassword">••••••••••</span>
-            <button class="btn-icon-sm" id="modalTogglePw" title="보기">
+            <button class="btn-icon-sm" id="modalTogglePw" title="Show">
               <svg class="eye-open" width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M1 7.5S3.5 3 7.5 3 14 7.5 14 7.5 11.5 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.3"/><circle cx="7.5" cy="7.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
               <svg class="eye-closed" width="14" height="14" viewBox="0 0 15 15" fill="none" style="display:none"><path d="M2 2l11 11M6.3 5.8A3 3 0 0 1 10.2 9.7M4 4.4C2.3 5.5 1 7.5 1 7.5s2.5 4.5 6.5 4.5c1 0 2-.3 2.8-.7M5.5 3.5C6.1 3.2 6.8 3 7.5 3c4 0 6.5 4.5 6.5 4.5s-.6 1.1-1.7 2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             </button>
             <button class="btn-copy" data-target="password">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-              복사
+              Copy
             </button>
           </div>
         </div>
         <div class="modal-field" id="modalNoteField">
-          <span class="modal-field-label">메모</span>
+          <span class="modal-field-label">Note</span>
           <span class="modal-field-value modal-note" id="modalNote"></span>
         </div>
         <div class="modal-field">
-          <span class="modal-field-label">카테고리</span>
+          <span class="modal-field-label">Category</span>
           <span class="modal-cat-badge" id="modalCat"></span>
         </div>
         <div class="modal-field">
-          <span class="modal-field-label">추가일</span>
+          <span class="modal-field-label">Added</span>
           <span class="modal-field-value" id="modalDate"></span>
         </div>
       </div>
       <div class="modal-footer">
         <button class="btn-modal-edit" id="btnModalEdit">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          수정
+          Edit
         </button>
         <button class="btn-modal-delete" id="btnModalDelete">
           <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2.5h4V4M5.5 6.5v4M8.5 6.5v4M3 4l.7 7.5a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L11 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          삭제
+          Delete
         </button>
       </div>
     </div>
