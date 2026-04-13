@@ -403,6 +403,25 @@ photoInput.addEventListener('change', () => {
   photoInput.value = '';
 });
 
+// ─── ID Presets ───────────────────────────────────
+const idPresets = $('idPresets');
+
+inputUsername.addEventListener('focus', () => {
+  idPresets.style.display = 'flex';
+});
+
+inputUsername.addEventListener('blur', () => {
+  setTimeout(() => { idPresets.style.display = 'none'; }, 150);
+});
+
+idPresets.addEventListener('click', e => {
+  const chip = e.target.closest('.id-preset-chip');
+  if (!chip) return;
+  inputUsername.value = chip.dataset.id;
+  idPresets.style.display = 'none';
+  inputPassword.focus();
+});
+
 // ─── Form ─────────────────────────────────────────
 function openForm(id = null) {
   editingId = id;

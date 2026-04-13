@@ -555,6 +555,35 @@ input, textarea {
 }
 .pw-field::placeholder { color: rgba(255,107,107,.4); font-family: var(--font-kr); }
 
+/* ID presets */
+.id-presets {
+  display: flex; flex-direction: column; gap: 0;
+  border: 1.5px solid var(--border);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  max-height: 180px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.id-preset-chip {
+  width: 100%;
+  padding: 12px 14px;
+  font-size: 13.5px; font-family: var(--font-mono);
+  color: var(--text-1);
+  text-align: left;
+  background: var(--gray-50);
+  border-bottom: 1px solid var(--gray-150);
+  transition: background .1s;
+}
+
+.id-preset-chip:last-child { border-bottom: none; }
+
+.id-preset-chip:active {
+  background: var(--red-50);
+  color: var(--accent);
+}
+
 /* strength */
 .pw-strength-row { display: flex; align-items: center; gap: 8px; }
 
