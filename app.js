@@ -11,7 +11,7 @@ import {
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 import {
   getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
-  onSnapshot, query, orderBy
+  onSnapshot
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
 
 const firebaseConfig = {
@@ -225,13 +225,13 @@ function passwordsCol() {
 
 function listenPasswords() {
   if (unsubscribe) unsubscribe();
-  const q = query(passwordsCol(), orderBy('createdAt', 'desc'));
-  unsubscribe = onSnapshot(q, (snap) => {
+  unsubscribe = onSnapshot(passwordsCol(), (snap) => {
     passwords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    passwords.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
     render();
   }, (err) => {
     console.error('Firestore error:', err);
-    showToast('Data sync error');
+    showToast('Error: ' + err.message);
   });
 }
 
