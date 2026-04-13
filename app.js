@@ -7,7 +7,7 @@
 // ─── Firebase ────────────────────────────────────
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
 import {
-  getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut
+  getAuth, signInAnonymously, onAuthStateChanged, signOut
 } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
 import {
   getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
@@ -95,8 +95,12 @@ const btnExport      = $('btnExport');
 
 // auth
 const loginOverlay = $('loginOverlay');
-const btnGoogleLogin = $('btnGoogleLogin');
+const loginPwInput = $('loginPwInput');
+const btnLoginSubmit = $('btnLoginSubmit');
+const loginError = $('loginError');
 const btnLogout = $('btnLogout');
+
+const APP_PIN = '1235';
 
 // ─── Utils ────────────────────────────────────────
 let toastTimer;
@@ -181,15 +185,24 @@ function hideLogin() {
   document.querySelector('.search-bar-wrap').style.display = '';
 }
 
-btnGoogleLogin.addEventListener('click', async () => {
-  try {
-    await signInWithPopup(auth, new GoogleAuthProvider());
-  } catch (e) {
-    if (e.code !== 'auth/popup-closed-by-user') {
-      showToast('Login failed');
+function tryLogin() {
+  const val = loginPwInput.value.trim();
+  if (val === APP_PIN) {
+    loginError.style.display = 'none';
+    signInAnonymously(auth).catch(e => {
       console.error(e);
-    }
+      showToast('Auth error');
+    });
+  } else {
+    loginError.style.display = '';
+    loginPwInput.value = '';
+    loginPwInput.focus();
   }
+}
+
+btnLoginSubmit.addEventListener('click', tryLogin);
+loginPwInput.addEventListener('keydown', e => {
+  if (e.key === 'Enter') tryLogin();
 });
 
 btnLogout.addEventListener('click', async () => {
