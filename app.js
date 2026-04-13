@@ -758,5 +758,36 @@ document.addEventListener('keydown', e => {
   if (e.key === 'Escape') { closeModal(); closeForm(); }
 });
 
+// ─── Pull to refresh ──────────────────────────────
+const mainScroll = $('mainScroll');
+let pullStartY = 0;
+let pulling = false;
+
+mainScroll.addEventListener('touchstart', e => {
+  if (mainScroll.scrollTop === 0) {
+    pullStartY = e.touches[0].clientY;
+    pulling = true;
+  }
+}, { passive: true });
+
+mainScroll.addEventListener('touchend', e => {
+  if (!pulling) return;
+  const diff = e.changedTouches[0].clientY - pullStartY;
+  pulling = false;
+  if (diff > 80) {
+    // Reset filter to All
+    currentFilter = 'All';
+    searchInput.value = '';
+    searchQuery = '';
+    searchClear.style.display = 'none';
+    filterTabs.querySelectorAll('.filter-tab').forEach(t =>
+      t.classList.toggle('active', t.dataset.filter === 'All')
+    );
+    // Re-listen (refresh from Firestore)
+    if (currentUser) listenPasswords();
+    showToast('Refreshed');
+  }
+}, { passive: true });
+
 // ─── Init ─────────────────────────────────────────
 render();
