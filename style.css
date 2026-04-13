@@ -159,23 +159,25 @@ input, textarea {
 }
 
 .filter-tabs {
-  display: flex; gap: 5px;
-  padding: 0 14px;
-  overflow-x: auto; scrollbar-width: none;
-  -webkit-overflow-scrolling: touch;
+  display: flex; gap: 4px;
+  padding: 0 10px;
+  width: 100%;
   height: 100%; align-items: center;
+  justify-content: space-between;
 }
 
-.filter-tabs::-webkit-scrollbar { display: none; }
-
 .filter-tab {
-  height: 30px; padding: 0 13px;
+  height: 28px;
+  flex: 1;
   border-radius: 99px;
-  font-size: 12px; font-weight: 500;
+  font-size: 11px; font-weight: 500;
   font-family: var(--font-mono);
   color: var(--text-2); white-space: nowrap;
-  border: 1.5px solid transparent; flex-shrink: 0;
-  letter-spacing: .2px;
+  border: 1.5px solid transparent;
+  letter-spacing: 0;
+  padding: 0 2px;
+  text-align: center;
+  min-width: 0;
 }
 
 .filter-tab.active {
@@ -256,14 +258,13 @@ input, textarea {
   border-top: 1px solid rgba(255,107,107,.1);
 }
 
-/* 아이디 */
+/* 아이디 — 고정 너비, 생략 없음 */
 .card-id {
   font-family: var(--font-mono);
   font-size: 11.5px; font-weight: 400;
   color: var(--text-3);
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  min-width: 0; flex: 0 1 auto;
-  max-width: 38%;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .card-empty { color: var(--gray-300); }
@@ -275,7 +276,7 @@ input, textarea {
   flex-shrink: 0;
 }
 
-/* 비밀번호 — 고정 너비로 정렬감 유지 */
+/* 비밀번호 — 남은 공간 채우고 우측 정렬 */
 .card-pw {
   flex: 1; min-width: 0;
   font-family: var(--font-mono);
@@ -283,6 +284,7 @@ input, textarea {
   color: var(--coral);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   letter-spacing: .4px;
+  text-align: right;
 }
 
 /* 복사 버튼 (1개) */
@@ -754,7 +756,8 @@ input, textarea {
   :root { --header-h: 62px; --filter-h: 50px; --search-h: 70px; }
 
   .header-inner { padding: 0 24px; }
-  .filter-tabs { padding: 0 20px; }
+  .filter-tabs { padding: 0 20px; gap: 6px; }
+  .filter-tab { font-size: 12px; height: 30px; }
   .pw-list { padding: 16px 20px; gap: 10px; }
 
   .card-row-top { padding: 10px 16px 6px; }
