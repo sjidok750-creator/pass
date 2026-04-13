@@ -213,7 +213,7 @@ btnLogout.addEventListener('click', async () => {
 
 // ─── Firestore ────────────────────────────────────
 function passwordsCol() {
-  return collection(db, 'users', currentUser.uid, 'passwords');
+  return collection(db, 'passwords');
 }
 
 function listenPasswords() {
@@ -240,7 +240,7 @@ async function saveEntry() {
   try {
     if (editingId) {
       const existing = passwords.find(p => p.id === editingId);
-      const docRef = doc(db, 'users', currentUser.uid, 'passwords', editingId);
+      const docRef = doc(db, 'passwords', editingId);
       await updateDoc(docRef, {
         service, username, password, category,
         photo: currentPhotoData !== null ? currentPhotoData : (existing?.photo || null),
@@ -622,7 +622,7 @@ btnModalDelete.addEventListener('click', async () => {
   if (!p) return;
   if (confirm(`Delete "${p.service}"?`)) {
     try {
-      const docRef = doc(db, 'users', currentUser.uid, 'passwords', currentModalId);
+      const docRef = doc(db, 'passwords', currentModalId);
       await deleteDoc(docRef);
       showToast('Deleted.');
     } catch (e) {
