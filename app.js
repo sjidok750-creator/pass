@@ -1,19 +1,46 @@
 /* ===========================
    PASS NOTE — app.js
+   Firebase Firestore + Google Auth
    =========================== */
 'use strict';
+
+// ─── Firebase ────────────────────────────────────
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-app.js';
+import {
+  getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-auth.js';
+import {
+  getFirestore, collection, doc, addDoc, updateDoc, deleteDoc,
+  onSnapshot, query, orderBy
+} from 'https://www.gstatic.com/firebasejs/11.6.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBT0ynNx9trL5EjUvzPbEKXMhsnWjjn1hI",
+  authDomain: "passnote-59bdf.firebaseapp.com",
+  projectId: "passnote-59bdf",
+  storageBucket: "passnote-59bdf.firebasestorage.app",
+  messagingSenderId: "375207399421",
+  appId: "1:375207399421:web:4bf2602e8579dd8d4a9394"
+};
+
+const app  = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
+
+let currentUser = null;
+let unsubscribe = null; // Firestore listener
 
 // ─── Category meta ────────────────────────────────
 const CAT_COLORS = {
   Finance: '#16a34a',
   Website: '#2563eb',
   App:     '#7c3aed',
-  OTT:     '#e11d48',
+  OTT:    '#e11d48',
   Other:   '#5e6a82',
 };
 
 // ─── State ────────────────────────────────────────
-let passwords     = JSON.parse(localStorage.getItem('passnote_v2') || '[]');
+let passwords     = [];
 let editingId     = null;
 let currentFilter = 'All';
 let searchQuery   = '';
@@ -66,15 +93,12 @@ const btnModalDelete = $('btnModalDelete');
 const btnAdd         = $('btnAdd');
 const btnExport      = $('btnExport');
 
+// auth
+const loginOverlay = $('loginOverlay');
+const btnGoogleLogin = $('btnGoogleLogin');
+const btnLogout = $('btnLogout');
+
 // ─── Utils ────────────────────────────────────────
-function uid() {
-  return Date.now().toString(36) + Math.random().toString(36).slice(2,7);
-}
-
-function save() {
-  localStorage.setItem('passnote_v2', JSON.stringify(passwords));
-}
-
 let toastTimer;
 function showToast(msg) {
   toast.textContent = msg;
@@ -111,7 +135,6 @@ function highlight(text, q) {
   );
 }
 
-// short label for cat box (≤3 chars)
 function catShort(cat) {
   const map = { Finance:'FIN', Website:'WEB', Shopping:'SHOP', Game:'GAME', Coding:'DEV', Social:'SOC', Other:'ETC' };
   return map[cat] || cat.slice(0,3).toUpperCase();
@@ -141,9 +164,140 @@ function updateStrengthUI() {
   pwStrengthLabel.style.color     = color;
 }
 
+// ─── Auth ─────────────────────────────────────────
+function showLogin() {
+  loginOverlay.style.display = 'flex';
+  document.querySelector('.header').style.display = 'none';
+  document.querySelector('.filter-bar').style.display = 'none';
+  document.querySelector('.main').style.display = 'none';
+  document.querySelector('.search-bar-wrap').style.display = 'none';
+}
+
+function hideLogin() {
+  loginOverlay.style.display = 'none';
+  document.querySelector('.header').style.display = '';
+  document.querySelector('.filter-bar').style.display = '';
+  document.querySelector('.main').style.display = '';
+  document.querySelector('.search-bar-wrap').style.display = '';
+}
+
+btnGoogleLogin.addEventListener('click', async () => {
+  try {
+    await signInWithPopup(auth, new GoogleAuthProvider());
+  } catch (e) {
+    if (e.code !== 'auth/popup-closed-by-user') {
+      showToast('Login failed');
+      console.error(e);
+    }
+  }
+});
+
+btnLogout.addEventListener('click', async () => {
+  if (confirm('Logout?')) {
+    await signOut(auth);
+  }
+});
+
+// ─── Firestore ────────────────────────────────────
+function passwordsCol() {
+  return collection(db, 'users', currentUser.uid, 'passwords');
+}
+
+function listenPasswords() {
+  if (unsubscribe) unsubscribe();
+  const q = query(passwordsCol(), orderBy('createdAt', 'desc'));
+  unsubscribe = onSnapshot(q, (snap) => {
+    passwords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    render();
+  }, (err) => {
+    console.error('Firestore error:', err);
+    showToast('Data sync error');
+  });
+}
+
+async function saveEntry() {
+  const service  = inputService.value.trim();
+  const username = inputUsername.value.trim();
+  const password = inputPassword.value.trim();
+  const category = editCatInput.value || 'Other';
+
+  if (!service)  { inputService.focus();  showToast('Name is required.'); return; }
+  if (!password) { inputPassword.focus(); showToast('Password is required.'); return; }
+
+  try {
+    if (editingId) {
+      const existing = passwords.find(p => p.id === editingId);
+      const docRef = doc(db, 'users', currentUser.uid, 'passwords', editingId);
+      await updateDoc(docRef, {
+        service, username, password, category,
+        photo: currentPhotoData !== null ? currentPhotoData : (existing?.photo || null),
+        updatedAt: Date.now(),
+      });
+      showToast('Updated ✓');
+    } else {
+      await addDoc(passwordsCol(), {
+        service, username, password, category,
+        url: '', note: '',
+        photo: currentPhotoData || null,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+      showToast('Saved ✓');
+    }
+  } catch (e) {
+    console.error(e);
+    showToast('Save failed');
+  }
+
+  closeForm();
+}
+
+// ─── Migrate localStorage → Firestore ─────────────
+async function migrateLocalData() {
+  const local = JSON.parse(localStorage.getItem('passnote_v2') || '[]');
+  if (local.length === 0) return;
+
+  const existingIds = new Set(passwords.map(p => p.service + '|' + p.password));
+  let migrated = 0;
+
+  for (const item of local) {
+    const key = item.service + '|' + item.password;
+    if (existingIds.has(key)) continue;
+    try {
+      const { id, ...data } = item;
+      await addDoc(passwordsCol(), data);
+      migrated++;
+    } catch (e) {
+      console.error('Migration error:', e);
+    }
+  }
+
+  if (migrated > 0) {
+    showToast(`${migrated} items migrated`);
+  }
+  localStorage.removeItem('passnote_v2');
+}
+
+// ─── Auth state listener ──────────────────────────
+onAuthStateChanged(auth, (user) => {
+  if (user) {
+    currentUser = user;
+    hideLogin();
+    listenPasswords();
+    // migrate old localStorage data
+    setTimeout(() => migrateLocalData(), 1500);
+  } else {
+    currentUser = null;
+    if (unsubscribe) { unsubscribe(); unsubscribe = null; }
+    passwords = [];
+    render();
+    showLogin();
+  }
+});
+
 // ─── Filter / Sort ────────────────────────────────
 function getFiltered() {
-  let list = [...passwords].sort((a,b) => b.createdAt - a.createdAt);
+  let list = [...passwords];
   if (currentFilter !== 'All')
     list = list.filter(p => p.category === currentFilter);
   if (searchQuery) {
@@ -180,12 +334,10 @@ function render() {
 
     return `
       <div class="pw-card" data-id="${p.id}" role="button" tabindex="0">
-        <!-- 윗줄: 색 점 + 서비스명 -->
         <div class="card-row-top">
           ${dotHtml}
           <span class="card-name">${nameHtml}</span>
         </div>
-        <!-- 아랫줄: 아이디 · 비번 · 복사 -->
         <div class="card-row-bot">
           <span class="card-id">${idHtml}</span>
           <span class="card-sep">·</span>
@@ -280,40 +432,6 @@ function closeForm() {
   formOverlay.classList.remove('open');
   document.body.style.overflow = '';
   editingId = null;
-}
-
-function saveEntry() {
-  const service  = inputService.value.trim();
-  const username = inputUsername.value.trim();
-  const password = inputPassword.value.trim();
-  const category = editCatInput.value || 'Other';
-
-  if (!service)  { inputService.focus();  showToast('Name is required.'); return; }
-  if (!password) { inputPassword.focus(); showToast('Password is required.'); return; }
-
-  if (editingId) {
-    const idx = passwords.findIndex(p => p.id === editingId);
-    if (idx !== -1) {
-      const prev = passwords[idx];
-      passwords[idx] = {
-        ...prev, service, username, password, category,
-        photo: currentPhotoData !== null ? currentPhotoData : (prev.photo || null),
-        updatedAt: Date.now(),
-      };
-      showToast('Updated ✓');
-    }
-  } else {
-    passwords.unshift({
-      id: uid(), service, username, password, category,
-      url: '', note: '',
-      photo: currentPhotoData || null,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-    showToast('Saved ✓');
-  }
-
-  save(); render(); closeForm();
 }
 
 // ─── Detail sheet ─────────────────────────────────
@@ -467,13 +585,19 @@ btnModalEdit.addEventListener('click', () => {
   closeModal(); openForm(id);
 });
 
-btnModalDelete.addEventListener('click', () => {
+btnModalDelete.addEventListener('click', async () => {
   const p = passwords.find(x => x.id === currentModalId);
   if (!p) return;
   if (confirm(`Delete "${p.service}"?`)) {
-    passwords = passwords.filter(x => x.id !== currentModalId);
-    save(); render(); closeModal();
-    showToast('Deleted.');
+    try {
+      const docRef = doc(db, 'users', currentUser.uid, 'passwords', currentModalId);
+      await deleteDoc(docRef);
+      showToast('Deleted.');
+    } catch (e) {
+      console.error(e);
+      showToast('Delete failed');
+    }
+    closeModal();
   }
 });
 
