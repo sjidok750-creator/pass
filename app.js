@@ -460,11 +460,36 @@ function setPhoto(dataUrl) {
   }
 }
 
-photoThumb.addEventListener('click', () => photoInput.click());
+// Photo action sheet
+const photoActionOverlay = $('photoActionOverlay');
+const photoCameraInput   = $('photoCameraInput');
+const photoLibraryInput  = $('photoLibraryInput');
+
+function openPhotoAction() {
+  photoActionOverlay.classList.add('open');
+}
+function closePhotoAction() {
+  photoActionOverlay.classList.remove('open');
+}
+
+photoThumb.addEventListener('click', openPhotoAction);
 photoRemove.addEventListener('click', () => setPhoto(null));
 
-photoInput.addEventListener('change', () => {
-  const file = photoInput.files[0];
+$('actionCamera').addEventListener('click', () => {
+  closePhotoAction();
+  photoCameraInput.click();
+});
+$('actionLibrary').addEventListener('click', () => {
+  closePhotoAction();
+  photoLibraryInput.click();
+});
+$('actionCancel').addEventListener('click', closePhotoAction);
+photoActionOverlay.addEventListener('click', e => {
+  if (e.target === photoActionOverlay) closePhotoAction();
+});
+
+function handlePhotoFile(input) {
+  const file = input.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
@@ -481,8 +506,11 @@ photoInput.addEventListener('change', () => {
     img.src = e.target.result;
   };
   reader.readAsDataURL(file);
-  photoInput.value = '';
-});
+  input.value = '';
+}
+
+photoCameraInput.addEventListener('change', () => handlePhotoFile(photoCameraInput));
+photoLibraryInput.addEventListener('change', () => handlePhotoFile(photoLibraryInput));
 
 // ─── ID Presets ───────────────────────────────────
 const idPresets = $('idPresets');
@@ -632,15 +660,24 @@ function exportData() {
   });
 
   const html = `<!DOCTYPE html><html><head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-      body { font-family: 'Pretendard', sans-serif; padding: 20px; font-size: 11px; }
+      body { font-family: -apple-system, 'Pretendard', sans-serif; padding: 16px; font-size: 11px; margin: 0; }
+      .top-bar { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; margin-bottom: 12px; border-bottom: 1px solid #ddd; }
+      .btn-back { font-size: 15px; font-weight: 600; color: #d91e35; background: none; border: none; cursor: pointer; padding: 8px 0; }
+      .btn-print { font-size: 13px; font-weight: 600; color: #fff; background: #d91e35; border: none; border-radius: 8px; padding: 8px 16px; cursor: pointer; }
       h2 { font-size: 16px; margin-bottom: 12px; }
       table { width: 100%; border-collapse: collapse; }
-      th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; }
+      th, td { border: 1px solid #ccc; padding: 6px 8px; text-align: left; font-size: 10px; }
       th { background: #f2f2f2; font-weight: 600; }
       td:nth-child(4) { font-family: monospace; color: #d93030; }
+      @media print { .top-bar { display: none !important; } }
     </style>
   </head><body>
+    <div class="top-bar">
+      <button class="btn-back" onclick="window.close(); history.back();">← Back</button>
+      <button class="btn-print" onclick="document.title='${filename}'; window.print();">Save PDF</button>
+    </div>
     <h2>PassNote — ${yy}.${mm}.${dd}</h2>
     <table>
       <thead><tr><th>Name</th><th>Type</th><th>ID / Email</th><th>Password</th><th>Updated</th></tr></thead>
@@ -648,13 +685,9 @@ function exportData() {
     </table>
   </body></html>`;
 
-  const printWin = window.open('', '_blank', 'width=800,height=600');
+  const printWin = window.open('', '_blank');
   printWin.document.write(html);
   printWin.document.close();
-  printWin.onload = () => {
-    printWin.document.title = filename;
-    printWin.print();
-  };
   showToast('PDF export ✓');
 }
 
