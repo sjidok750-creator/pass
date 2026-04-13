@@ -2,7 +2,11 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <meta name="theme-color" content="#d91e35" />
   <title>Pass Note</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,7 +21,7 @@
     <div class="header-inner">
       <div class="header-brand">
         <div class="header-logo">
-          <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+          <svg width="26" height="26" viewBox="0 0 28 28" fill="none">
             <rect x="2" y="2" width="24" height="24" rx="6" fill="rgba(255,255,255,0.15)" stroke="rgba(255,255,255,0.4)" stroke-width="1.5"/>
             <circle cx="9" cy="14" r="2.5" fill="white"/>
             <circle cx="14" cy="14" r="2.5" fill="white" opacity="0.6"/>
@@ -31,50 +35,152 @@
         </div>
       </div>
       <div class="header-actions">
-        <button class="btn-header" id="btnExport" title="내보내기">
+        <button class="btn-header" id="btnExport" title="Export">
           <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 1v9M5 7l3 3 3-3M2 11v2a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          <span>Export</span>
         </button>
-        <button class="btn-header btn-header-primary" id="btnAdd" title="새 항목 추가">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          <span>New</span>
+        <button class="btn-header btn-header-primary" id="btnAdd">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
         </button>
       </div>
     </div>
     <div class="header-line"></div>
   </header>
 
-  <!-- MAIN LAYOUT -->
-  <main class="main">
+  <!-- FILTER TABS (below header) -->
+  <div class="filter-bar">
+    <div class="filter-tabs" id="filterTabs">
+      <button class="filter-tab active" data-filter="All">All</button>
+      <button class="filter-tab" data-filter="Finance">Finance</button>
+      <button class="filter-tab" data-filter="Website">Website</button>
+      <button class="filter-tab" data-filter="Shopping">Shopping</button>
+      <button class="filter-tab" data-filter="Game">Game</button>
+      <button class="filter-tab" data-filter="Coding">Coding</button>
+      <button class="filter-tab" data-filter="Social">Social</button>
+      <button class="filter-tab" data-filter="Other">Other</button>
+    </div>
+  </div>
 
-    <!-- ADD / EDIT FORM PANEL -->
-    <section class="form-panel" id="formPanel">
-      <div class="panel-header">
-        <div class="panel-header-left">
-          <div class="panel-icon" id="formPanelIcon">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><rect x="1" y="5" width="16" height="10" rx="3" stroke="currentColor" stroke-width="1.5"/><path d="M6 5V4a3 3 0 0 1 6 0v1" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="9" cy="10" r="1.5" fill="currentColor"/></svg>
-          </div>
-          <div class="panel-title-group">
-            <span class="panel-title" id="formTitle">New Entry</span>
-            <span class="panel-cat-label" id="formCatLabel"></span>
+  <!-- STATS BAR -->
+  <div class="stats-bar">
+    <div class="stat-item">
+      <span class="stat-num" id="statTotal">0</span>
+      <span class="stat-label">Total</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item">
+      <span class="stat-num" id="statCategory">0</span>
+      <span class="stat-label" id="statCategoryLabel">Categories</span>
+    </div>
+    <div class="stat-divider"></div>
+    <div class="stat-item stat-item-warn" id="statWeak" style="display:none">
+      <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5l5 9.5H1.5l5-9.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 5v2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="6.5" cy="9" r=".6" fill="currentColor"/></svg>
+      <span class="stat-num" id="statWeakNum">0</span>
+      <span class="stat-label">Weak</span>
+    </div>
+  </div>
+
+  <!-- MAIN SCROLL AREA -->
+  <main class="main" id="mainScroll">
+
+    <!-- PASSWORD LIST -->
+    <div class="pw-list" id="pwList"></div>
+
+    <!-- EMPTY STATE -->
+    <div class="empty-state" id="emptyState">
+      <div class="empty-icon">
+        <svg width="72" height="72" viewBox="0 0 72 72" fill="none">
+          <rect x="12" y="26" width="48" height="36" rx="10" stroke="#dde1e9" stroke-width="2.5"/>
+          <path d="M24 26V20a12 12 0 0 1 24 0v6" stroke="#dde1e9" stroke-width="2.5" stroke-linecap="round"/>
+          <circle cx="36" cy="44" r="5" stroke="#dde1e9" stroke-width="2.5"/>
+          <path d="M36 49v5" stroke="#dde1e9" stroke-width="2.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <p class="empty-title">No passwords yet</p>
+      <p class="empty-desc">Tap <strong>+</strong> to add your first entry</p>
+      <button class="empty-cta" id="emptyAddBtn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Add Entry
+      </button>
+    </div>
+
+  </main>
+
+  <!-- BOTTOM SEARCH BAR -->
+  <div class="search-bar-wrap">
+    <div class="search-bar">
+      <div class="search-icon">
+        <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><circle cx="7.5" cy="7.5" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11.5 11.5L15 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <input type="text" class="search-input" id="searchInput" placeholder="Search name, ID, URL..." autocomplete="off" autocorrect="off" autocapitalize="off" />
+      <button class="search-clear" id="searchClear" style="display:none">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="search-results-count" id="searchCount"></div>
+  </div>
+
+  <!-- TOAST -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ════════════════════════════════════
+       CATEGORY PICKER SHEET
+  ════════════════════════════════════ -->
+  <div class="sheet-overlay" id="catPickerOverlay">
+    <div class="bottom-sheet" id="catPickerSheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <span class="sheet-title">Choose Category</span>
+        <button class="sheet-close" id="catPickerClose">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+      <div class="cat-picker-grid" id="catPickerGrid"></div>
+    </div>
+  </div>
+
+  <!-- ════════════════════════════════════
+       ADD / EDIT FORM SHEET
+  ════════════════════════════════════ -->
+  <div class="sheet-overlay" id="formOverlay">
+    <div class="bottom-sheet form-sheet" id="formSheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-header">
+        <div class="sheet-header-left">
+          <span class="sheet-cat-icon" id="formCatIcon"></span>
+          <div>
+            <span class="sheet-title" id="formTitle">New Entry</span>
+            <span class="sheet-cat-badge" id="formCatBadge"></span>
           </div>
         </div>
-        <button class="panel-close" id="btnCloseForm">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <button class="sheet-close" id="btnCloseForm">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       </div>
 
-      <div class="form-body">
-        <input type="hidden" id="editId" value="" />
-        <input type="hidden" id="editCategory" value="" />
+      <div class="form-body" id="formBody">
+        <input type="hidden" id="editId" />
+        <input type="hidden" id="editCategory" />
+
+        <!-- Photo attach -->
+        <div class="photo-row" id="photoRow">
+          <div class="photo-preview" id="photoPreview">
+            <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2" y="5" width="24" height="18" rx="4" stroke="currentColor" stroke-width="1.5"/><circle cx="14" cy="14" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M2 10h4l2-3h8l2 3h4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+            <span>Add Photo</span>
+          </div>
+          <input type="file" id="photoInput" accept="image/*" capture="environment" style="display:none" />
+          <button class="photo-remove" id="photoRemove" style="display:none">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+            Remove
+          </button>
+        </div>
 
         <div class="form-row">
           <label class="form-label">Name <span class="required">*</span></label>
           <div class="input-wrap">
             <div class="input-icon">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 5h5M4.5 7.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><rect x="1" y="1" width="12" height="12" rx="3" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 5h5M4.5 7.5h3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             </div>
-            <input type="text" class="form-input" id="inputService" placeholder="Service or app name" />
+            <input type="text" class="form-input" id="inputService" placeholder="Service or app name" autocomplete="off" />
           </div>
         </div>
 
@@ -82,9 +188,9 @@
           <label class="form-label">URL / App</label>
           <div class="input-wrap">
             <div class="input-icon">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 7h11M7 1.5C5.5 3.5 5 5.5 5 7s.5 3.5 2 5.5M7 1.5C8.5 3.5 9 5.5 9 7s-.5 3.5-2 5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="7" r="5.5" stroke="currentColor" stroke-width="1.3"/><path d="M1.5 7h11M7 1.5C5.5 3.5 5 5.5 5 7s.5 3.5 2 5.5M7 1.5C8.5 3.5 9 5.5 9 7s-.5 3.5-2 5.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             </div>
-            <input type="text" class="form-input" id="inputUrl" placeholder="https://" />
+            <input type="url" class="form-input" id="inputUrl" placeholder="https://" autocomplete="off" inputmode="url" />
           </div>
         </div>
 
@@ -92,9 +198,9 @@
           <label class="form-label">ID / Email</label>
           <div class="input-wrap">
             <div class="input-icon">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 12c0-2.8 2.2-4.5 5-4.5s5 1.7 5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 12c0-2.8 2.2-4.5 5-4.5s5 1.7 5 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             </div>
-            <input type="text" class="form-input" id="inputUsername" placeholder="username@email.com" />
+            <input type="text" class="form-input" id="inputUsername" placeholder="username or email" autocomplete="off" autocapitalize="none" />
           </div>
         </div>
 
@@ -102,18 +208,16 @@
           <label class="form-label">Password <span class="required">*</span></label>
           <div class="input-wrap">
             <div class="input-icon">
-              <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="2" y="6" width="10" height="6.5" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="9" r="1" fill="currentColor"/></svg>
+              <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><rect x="2" y="6" width="10" height="6.5" rx="2" stroke="currentColor" stroke-width="1.3"/><path d="M4.5 6V4.5a2.5 2.5 0 0 1 5 0V6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="7" cy="9" r="1" fill="currentColor"/></svg>
             </div>
-            <input type="password" class="form-input" id="inputPassword" placeholder="Enter password" />
-            <button class="input-btn-end" id="btnTogglePw" title="Show/Hide">
-              <svg class="eye-open" width="15" height="15" viewBox="0 0 15 15" fill="none"><path d="M1 7.5S3.5 3 7.5 3 14 7.5 14 7.5 11.5 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.3"/><circle cx="7.5" cy="7.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
-              <svg class="eye-closed" width="15" height="15" viewBox="0 0 15 15" fill="none" style="display:none"><path d="M2 2l11 11M6.3 5.8A3 3 0 0 1 10.2 9.7M4 4.4C2.3 5.5 1 7.5 1 7.5s2.5 4.5 6.5 4.5c1 0 2-.3 2.8-.7M5.5 3.5C6.1 3.2 6.8 3 7.5 3c4 0 6.5 4.5 6.5 4.5s-.6 1.1-1.7 2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <input type="password" class="form-input" id="inputPassword" placeholder="Enter password" autocomplete="new-password" />
+            <button class="input-btn-end" id="btnTogglePw" type="button">
+              <svg class="eye-open" width="18" height="18" viewBox="0 0 15 15" fill="none"><path d="M1 7.5S3.5 3 7.5 3 14 7.5 14 7.5 11.5 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.3"/><circle cx="7.5" cy="7.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
+              <svg class="eye-closed" width="18" height="18" viewBox="0 0 15 15" fill="none" style="display:none"><path d="M2 2l11 11M6.3 5.8A3 3 0 0 1 10.2 9.7M4 4.4C2.3 5.5 1 7.5 1 7.5s2.5 4.5 6.5 4.5c1 0 2-.3 2.8-.7M5.5 3.5C6.1 3.2 6.8 3 7.5 3c4 0 6.5 4.5 6.5 4.5s-.6 1.1-1.7 2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             </button>
           </div>
-          <div class="pw-strength" id="pwStrength">
-            <div class="pw-strength-bar">
-              <div class="pw-strength-fill" id="pwStrengthFill"></div>
-            </div>
+          <div class="pw-strength">
+            <div class="pw-strength-bar"><div class="pw-strength-fill" id="pwStrengthFill"></div></div>
             <span class="pw-strength-label" id="pwStrengthLabel"></span>
           </div>
         </div>
@@ -126,117 +230,41 @@
         </div>
 
         <div class="form-actions">
-          <button class="btn-cancel" id="btnCancel">Cancel</button>
-          <button class="btn-save" id="btnSave">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <button class="btn-cancel" id="btnCancel" type="button">Cancel</button>
+          <button class="btn-save" id="btnSave" type="button">
+            <svg width="16" height="16" viewBox="0 0 14 14" fill="none"><path d="M2 7l3.5 3.5L12 3.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             Save
           </button>
         </div>
-      </div>
-    </section>
 
-    <!-- LIST PANEL -->
-    <section class="list-panel">
-      <!-- STATS BAR -->
-      <div class="stats-bar">
-        <div class="stat-item">
-          <span class="stat-num" id="statTotal">0</span>
-          <span class="stat-label">Total</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item">
-          <span class="stat-num" id="statCategory">0</span>
-          <span class="stat-label" id="statCategoryLabel">Categories</span>
-        </div>
-        <div class="stat-divider"></div>
-        <div class="stat-item stat-item-warn" id="statWeak" style="display:none">
-          <svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M6.5 1.5l5 9.5H1.5l5-9.5z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 5v2.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="6.5" cy="9" r=".6" fill="currentColor"/></svg>
-          <span class="stat-num" id="statWeakNum">0</span>
-          <span class="stat-label">Weak</span>
-        </div>
-      </div>
-
-      <!-- FILTER TABS -->
-      <div class="filter-tabs" id="filterTabs">
-        <button class="filter-tab active" data-filter="All">All</button>
-        <button class="filter-tab" data-filter="Finance">Finance</button>
-        <button class="filter-tab" data-filter="Website">Website</button>
-        <button class="filter-tab" data-filter="Shopping">Shopping</button>
-        <button class="filter-tab" data-filter="Game">Game</button>
-        <button class="filter-tab" data-filter="Coding">Coding</button>
-        <button class="filter-tab" data-filter="Social">Social</button>
-        <button class="filter-tab" data-filter="Other">Other</button>
-      </div>
-
-      <!-- PASSWORD LIST -->
-      <div class="pw-list" id="pwList"></div>
-
-      <!-- EMPTY STATE -->
-      <div class="empty-state" id="emptyState">
-        <div class="empty-icon">
-          <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
-            <rect x="10" y="22" width="44" height="32" rx="8" stroke="#dde1e9" stroke-width="2"/>
-            <path d="M20 22V18a12 12 0 0 1 24 0v4" stroke="#dde1e9" stroke-width="2" stroke-linecap="round"/>
-            <circle cx="32" cy="38" r="4" stroke="#dde1e9" stroke-width="2"/>
-            <path d="M32 42v5" stroke="#dde1e9" stroke-width="2" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <p class="empty-title">No passwords saved</p>
-        <p class="empty-desc">Click the <strong>+</strong> area below or press <strong>New</strong> to add your first entry</p>
-        <button class="empty-cta" id="emptyAddBtn">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M7 2v10M2 7h10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          Add Entry
-        </button>
-      </div>
-    </section>
-  </main>
-
-  <!-- BOTTOM SEARCH BAR -->
-  <div class="search-bar-wrap" id="searchBarWrap">
-    <div class="search-bar">
-      <div class="search-icon">
-        <svg width="17" height="17" viewBox="0 0 17 17" fill="none"><circle cx="7.5" cy="7.5" r="5" stroke="currentColor" stroke-width="1.6"/><path d="M11.5 11.5L15 15" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
-      </div>
-      <input type="text" class="search-input" id="searchInput" placeholder="Search by name, ID, URL..." />
-      <div class="search-kbd"><kbd>⌘</kbd><kbd>K</kbd></div>
-      <button class="search-clear" id="searchClear" style="display:none">
-        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M3 3l8 8M11 3l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-      </button>
-    </div>
-    <div class="search-results-count" id="searchCount"></div>
-  </div>
-
-  <!-- TOAST -->
-  <div class="toast" id="toast"></div>
-
-  <!-- CATEGORY PICKER MODAL -->
-  <div class="modal-overlay" id="catPickerOverlay">
-    <div class="cat-picker-modal" id="catPickerModal">
-      <div class="cat-picker-header">
-        <span class="cat-picker-title">Choose Category</span>
-        <button class="modal-close" id="catPickerClose">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
-        </button>
-      </div>
-      <div class="cat-picker-grid" id="catPickerGrid">
-        <!-- rendered by JS -->
+        <!-- safe area bottom padding -->
+        <div class="form-bottom-pad"></div>
       </div>
     </div>
   </div>
 
-  <!-- DETAIL MODAL -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal" id="modal">
+  <!-- ════════════════════════════════════
+       DETAIL MODAL SHEET
+  ════════════════════════════════════ -->
+  <div class="sheet-overlay" id="modalOverlay">
+    <div class="bottom-sheet detail-sheet" id="modal">
+      <div class="sheet-handle"></div>
       <div class="modal-header">
         <div class="modal-service-icon" id="modalIcon"></div>
         <div class="modal-title-group">
           <span class="modal-service" id="modalService"></span>
           <span class="modal-url" id="modalUrl"></span>
         </div>
-        <button class="modal-close" id="modalClose">
-          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <button class="sheet-close" id="modalClose">
+          <svg width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
         </button>
       </div>
+
+      <!-- attached photo -->
+      <div class="modal-photo-wrap" id="modalPhotoWrap" style="display:none">
+        <img class="modal-photo" id="modalPhoto" src="" alt="attached" />
+      </div>
+
       <div class="modal-body">
         <div class="modal-field">
           <span class="modal-field-label">ID / Email</span>
@@ -252,9 +280,9 @@
           <span class="modal-field-label">Password</span>
           <div class="modal-field-row">
             <span class="modal-field-value modal-pw" id="modalPassword">••••••••••</span>
-            <button class="btn-icon-sm" id="modalTogglePw" title="Show">
-              <svg class="eye-open" width="14" height="14" viewBox="0 0 15 15" fill="none"><path d="M1 7.5S3.5 3 7.5 3 14 7.5 14 7.5 11.5 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.3"/><circle cx="7.5" cy="7.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
-              <svg class="eye-closed" width="14" height="14" viewBox="0 0 15 15" fill="none" style="display:none"><path d="M2 2l11 11M6.3 5.8A3 3 0 0 1 10.2 9.7M4 4.4C2.3 5.5 1 7.5 1 7.5s2.5 4.5 6.5 4.5c1 0 2-.3 2.8-.7M5.5 3.5C6.1 3.2 6.8 3 7.5 3c4 0 6.5 4.5 6.5 4.5s-.6 1.1-1.7 2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            <button class="btn-icon-sm" id="modalTogglePw">
+              <svg class="eye-open" width="16" height="16" viewBox="0 0 15 15" fill="none"><path d="M1 7.5S3.5 3 7.5 3 14 7.5 14 7.5 11.5 12 7.5 12 1 7.5 1 7.5z" stroke="currentColor" stroke-width="1.3"/><circle cx="7.5" cy="7.5" r="1.8" stroke="currentColor" stroke-width="1.3"/></svg>
+              <svg class="eye-closed" width="16" height="16" viewBox="0 0 15 15" fill="none" style="display:none"><path d="M2 2l11 11M6.3 5.8A3 3 0 0 1 10.2 9.7M4 4.4C2.3 5.5 1 7.5 1 7.5s2.5 4.5 6.5 4.5c1 0 2-.3 2.8-.7M5.5 3.5C6.1 3.2 6.8 3 7.5 3c4 0 6.5 4.5 6.5 4.5s-.6 1.1-1.7 2.1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             </button>
             <button class="btn-copy" data-target="password">
               <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -262,7 +290,7 @@
             </button>
           </div>
         </div>
-        <div class="modal-field" id="modalNoteField">
+        <div class="modal-field" id="modalNoteField" style="display:none">
           <span class="modal-field-label">Note</span>
           <span class="modal-field-value modal-note" id="modalNote"></span>
         </div>
@@ -277,14 +305,15 @@
       </div>
       <div class="modal-footer">
         <button class="btn-modal-edit" id="btnModalEdit">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Edit
         </button>
         <button class="btn-modal-delete" id="btnModalDelete">
-          <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2.5h4V4M5.5 6.5v4M8.5 6.5v4M3 4l.7 7.5a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L11 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <svg width="15" height="15" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2.5h4V4M5.5 6.5v4M8.5 6.5v4M3 4l.7 7.5a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L11 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Delete
         </button>
       </div>
+      <div class="sheet-bottom-pad"></div>
     </div>
   </div>
 

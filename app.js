@@ -1,5 +1,5 @@
 /* ===========================
-   PASS NOTE — app.js
+   PASS NOTE — app.js  (Mobile/Tablet)
    =========================== */
 
 'use strict';
@@ -14,76 +14,84 @@ const CATEGORIES = [
   { key: 'Social',   icon: '💬', desc: 'SNS, Messaging' },
   { key: 'Other',    icon: '📁', desc: 'Everything else' },
 ];
-
 const CAT_META = Object.fromEntries(CATEGORIES.map(c => [c.key, c]));
 
 // ─── State ────────────────────────────────────────
-let passwords = JSON.parse(localStorage.getItem('passnote_v2') || '[]');
-let editingId = null;
+let passwords    = JSON.parse(localStorage.getItem('passnote_v2') || '[]');
+let editingId    = null;
 let currentFilter = 'All';
-let searchQuery = '';
+let searchQuery  = '';
 let modalPwVisible = false;
-let formPwVisible = false;
+let formPwVisible  = false;
 let currentModalId = null;
-let pendingCategory = null;   // category chosen in picker, waiting for form
+let currentPhotoDataUrl = null;  // base64 photo for current form
 
-// ─── DOM refs ─────────────────────────────────────
-const formPanel      = document.getElementById('formPanel');
-const formTitle      = document.getElementById('formTitle');
-const formCatLabel   = document.getElementById('formCatLabel');
-const formPanelIcon  = document.getElementById('formPanelIcon');
-const editIdInput    = document.getElementById('editId');
-const editCatInput   = document.getElementById('editCategory');
-const inputService   = document.getElementById('inputService');
-const inputUrl       = document.getElementById('inputUrl');
-const inputUsername  = document.getElementById('inputUsername');
-const inputPassword  = document.getElementById('inputPassword');
-const inputNote      = document.getElementById('inputNote');
-const pwStrengthFill  = document.getElementById('pwStrengthFill');
-const pwStrengthLabel = document.getElementById('pwStrengthLabel');
-const btnAdd         = document.getElementById('btnAdd');
-const btnCloseForm   = document.getElementById('btnCloseForm');
-const btnCancel      = document.getElementById('btnCancel');
-const btnSave        = document.getElementById('btnSave');
-const btnTogglePw    = document.getElementById('btnTogglePw');
-const btnExport      = document.getElementById('btnExport');
-const pwList         = document.getElementById('pwList');
-const emptyState     = document.getElementById('emptyState');
-const emptyAddBtn    = document.getElementById('emptyAddBtn');
-const filterTabs     = document.getElementById('filterTabs');
-const statTotal      = document.getElementById('statTotal');
-const statCategory   = document.getElementById('statCategory');
-const statCategoryLabel = document.getElementById('statCategoryLabel');
-const statWeakNum    = document.getElementById('statWeakNum');
-const statWeak       = document.getElementById('statWeak');
-const searchInput    = document.getElementById('searchInput');
-const searchClear    = document.getElementById('searchClear');
-const searchCount    = document.getElementById('searchCount');
+// ─── DOM ──────────────────────────────────────────
+const $ = id => document.getElementById(id);
+
+const filterTabs      = $('filterTabs');
+const statTotal       = $('statTotal');
+const statCategory    = $('statCategory');
+const statCategoryLabel = $('statCategoryLabel');
+const statWeakNum     = $('statWeakNum');
+const statWeak        = $('statWeak');
+const pwList          = $('pwList');
+const emptyState      = $('emptyState');
+const emptyAddBtn     = $('emptyAddBtn');
+const searchInput     = $('searchInput');
+const searchClear     = $('searchClear');
+const searchCount     = $('searchCount');
+const toast           = $('toast');
 
 // category picker
-const catPickerOverlay = document.getElementById('catPickerOverlay');
-const catPickerModal   = document.getElementById('catPickerModal');
-const catPickerClose   = document.getElementById('catPickerClose');
-const catPickerGrid    = document.getElementById('catPickerGrid');
+const catPickerOverlay = $('catPickerOverlay');
+const catPickerClose   = $('catPickerClose');
+const catPickerGrid    = $('catPickerGrid');
 
-// detail modal
-const modalOverlay   = document.getElementById('modalOverlay');
-const modalClose     = document.getElementById('modalClose');
-const modalIcon      = document.getElementById('modalIcon');
-const modalService   = document.getElementById('modalService');
-const modalUrl       = document.getElementById('modalUrl');
-const modalUsername  = document.getElementById('modalUsername');
-const modalPassword  = document.getElementById('modalPassword');
-const modalNote      = document.getElementById('modalNote');
-const modalNoteField = document.getElementById('modalNoteField');
-const modalCat       = document.getElementById('modalCat');
-const modalDate      = document.getElementById('modalDate');
-const modalTogglePw  = document.getElementById('modalTogglePw');
-const btnModalEdit   = document.getElementById('btnModalEdit');
-const btnModalDelete = document.getElementById('btnModalDelete');
-const toast          = document.getElementById('toast');
+// form sheet
+const formOverlay   = $('formOverlay');
+const formSheet     = $('formSheet');
+const formTitle     = $('formTitle');
+const formCatIcon   = $('formCatIcon');
+const formCatBadge  = $('formCatBadge');
+const btnCloseForm  = $('btnCloseForm');
+const btnCancel     = $('btnCancel');
+const btnSave       = $('btnSave');
+const editIdInput   = $('editId');
+const editCatInput  = $('editCategory');
+const inputService  = $('inputService');
+const inputUrl      = $('inputUrl');
+const inputUsername = $('inputUsername');
+const inputPassword = $('inputPassword');
+const inputNote     = $('inputNote');
+const btnTogglePw   = $('btnTogglePw');
+const pwStrengthFill  = $('pwStrengthFill');
+const pwStrengthLabel = $('pwStrengthLabel');
+const photoPreview  = $('photoPreview');
+const photoInput    = $('photoInput');
+const photoRemove   = $('photoRemove');
 
-// ─── Utilities ────────────────────────────────────
+// detail sheet
+const modalOverlay  = $('modalOverlay');
+const modalClose    = $('modalClose');
+const modalIcon     = $('modalIcon');
+const modalService  = $('modalService');
+const modalUrl      = $('modalUrl');
+const modalUsername = $('modalUsername');
+const modalPassword = $('modalPassword');
+const modalNote     = $('modalNote');
+const modalNoteField = $('modalNoteField');
+const modalCat      = $('modalCat');
+const modalDate     = $('modalDate');
+const modalTogglePw = $('modalTogglePw');
+const modalPhotoWrap = $('modalPhotoWrap');
+const modalPhoto    = $('modalPhoto');
+const btnModalEdit  = $('btnModalEdit');
+const btnModalDelete = $('btnModalDelete');
+const btnAdd        = $('btnAdd');
+const btnExport     = $('btnExport');
+
+// ─── Utils ────────────────────────────────────────
 function uid() {
   return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 }
@@ -92,11 +100,12 @@ function save() {
   localStorage.setItem('passnote_v2', JSON.stringify(passwords));
 }
 
+let toastTimer;
 function showToast(msg, duration = 2200) {
   toast.textContent = msg;
   toast.classList.add('show');
-  clearTimeout(toast._timer);
-  toast._timer = setTimeout(() => toast.classList.remove('show'), duration);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => toast.classList.remove('show'), duration);
 }
 
 function formatDate(ts) {
@@ -114,9 +123,9 @@ function getIconLetters(service) {
 
 const ICON_COLORS = 8;
 function iconColorClass(service) {
-  let hash = 0;
-  for (const c of service) hash = (hash * 31 + c.charCodeAt(0)) & 0xffffffff;
-  return `icon-color-${Math.abs(hash) % ICON_COLORS}`;
+  let h = 0;
+  for (const c of service) h = (h * 31 + c.charCodeAt(0)) & 0xffffffff;
+  return `icon-color-${Math.abs(h) % ICON_COLORS}`;
 }
 
 function catColorClass(cat) {
@@ -125,63 +134,58 @@ function catColorClass(cat) {
 
 function escHtml(str) {
   return String(str)
-    .replace(/&/g, '&amp;').replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
-function escapeRegex(str) {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+function escRegex(str) {
+  return str.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 }
 
 function highlight(text, query) {
   if (!query) return escHtml(text);
-  const escaped = escHtml(text);
-  const regex = new RegExp(`(${escapeRegex(query)})`, 'gi');
-  return escaped.replace(regex, '<mark>$1</mark>');
+  return escHtml(text).replace(
+    new RegExp(`(${escRegex(query)})`, 'gi'),
+    '<mark>$1</mark>'
+  );
 }
 
 // ─── Password Strength ────────────────────────────
 function measureStrength(pw) {
   if (!pw) return { score: 0, label: '', color: '' };
-  let score = 0;
-  if (pw.length >= 8)  score++;
-  if (pw.length >= 12) score++;
-  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) score++;
-  if (/\d/.test(pw)) score++;
-  if (/[^a-zA-Z0-9]/.test(pw)) score++;
-  if (score <= 1) return { score: 20,  label: 'Very Weak', color: '#ef4444' };
-  if (score === 2) return { score: 40,  label: 'Weak',      color: '#f97316' };
-  if (score === 3) return { score: 60,  label: 'Fair',      color: '#eab308' };
-  if (score === 4) return { score: 80,  label: 'Strong',    color: '#22c55e' };
-  return               { score: 100, label: 'Very Strong', color: '#16a34a' };
+  let s = 0;
+  if (pw.length >= 8)  s++;
+  if (pw.length >= 12) s++;
+  if (/[a-z]/.test(pw) && /[A-Z]/.test(pw)) s++;
+  if (/\d/.test(pw)) s++;
+  if (/[^a-zA-Z0-9]/.test(pw)) s++;
+  if (s <= 1) return { score: 20,  label: 'Very Weak',  color: '#ef4444' };
+  if (s === 2) return { score: 40,  label: 'Weak',       color: '#f97316' };
+  if (s === 3) return { score: 60,  label: 'Fair',       color: '#eab308' };
+  if (s === 4) return { score: 80,  label: 'Strong',     color: '#22c55e' };
+  return              { score: 100, label: 'Very Strong', color: '#16a34a' };
 }
 
 function isWeak(pw) { return measureStrength(pw).score <= 40; }
 
 function updateStrengthUI() {
-  const pw = inputPassword.value;
-  const { score, label, color } = measureStrength(pw);
-  pwStrengthFill.style.width = pw ? score + '%' : '0';
+  const { score, label, color } = measureStrength(inputPassword.value);
+  pwStrengthFill.style.width      = inputPassword.value ? score + '%' : '0';
   pwStrengthFill.style.background = color;
-  pwStrengthLabel.textContent = label;
-  pwStrengthLabel.style.color = color;
+  pwStrengthLabel.textContent     = label;
+  pwStrengthLabel.style.color     = color;
 }
 
-// ─── Eye icon ─────────────────────────────────────
 function updateEyeIcon(btn, visible) {
-  const open   = btn.querySelector('.eye-open');
-  const closed = btn.querySelector('.eye-closed');
-  if (open)   open.style.display   = visible ? 'none' : '';
-  if (closed) closed.style.display = visible ? ''     : 'none';
+  btn.querySelector('.eye-open').style.display   = visible ? 'none' : '';
+  btn.querySelector('.eye-closed').style.display = visible ? '' : 'none';
 }
 
-// ─── Filter / Search ──────────────────────────────
+// ─── Filter / Sort ────────────────────────────────
 function getFiltered() {
-  // always newest first
   let list = [...passwords].sort((a, b) => b.createdAt - a.createdAt);
-  if (currentFilter !== 'All') {
+  if (currentFilter !== 'All')
     list = list.filter(p => p.category === currentFilter);
-  }
   if (searchQuery) {
     const q = searchQuery.toLowerCase();
     list = list.filter(p =>
@@ -193,47 +197,10 @@ function getFiltered() {
   return list;
 }
 
-// ─── Category Picker ──────────────────────────────
-function buildCatPicker() {
-  catPickerGrid.innerHTML = CATEGORIES.map(c => `
-    <button class="cat-pick-item" data-cat="${c.key}">
-      <span class="cat-pick-icon">${c.icon}</span>
-      <span class="cat-pick-key">${c.key}</span>
-      <span class="cat-pick-desc">${c.desc}</span>
-    </button>
-  `).join('');
-}
-
-function openCatPicker(callback) {
-  buildCatPicker();
-  catPickerOverlay.classList.add('open');
-  catPickerOverlay._callback = callback;
-}
-
-function closeCatPicker() {
-  catPickerOverlay.classList.remove('open');
-  catPickerOverlay._callback = null;
-}
-
-catPickerGrid.addEventListener('click', e => {
-  const item = e.target.closest('.cat-pick-item');
-  if (!item) return;
-  const cat = item.dataset.cat;
-  const cb = catPickerOverlay._callback;  // 먼저 저장
-  closeCatPicker();                        // 그 다음 닫기
-  if (cb) cb(cat);                         // 저장해둔 콜백 실행
-});
-
-catPickerClose.addEventListener('click', closeCatPicker);
-catPickerOverlay.addEventListener('click', e => {
-  if (e.target === catPickerOverlay) closeCatPicker();
-});
-
 // ─── Render ───────────────────────────────────────
 function render() {
   const filtered = getFiltered();
 
-  // stats
   statTotal.textContent = passwords.length;
   const weakCount = passwords.filter(p => isWeak(p.password)).length;
   statWeakNum.textContent = weakCount;
@@ -243,16 +210,13 @@ function render() {
     statCategory.textContent = passwords.filter(p => p.category === currentFilter).length;
     statCategoryLabel.textContent = currentFilter;
   } else {
-    const cats = [...new Set(passwords.map(p => p.category))];
-    statCategory.textContent = cats.length;
+    statCategory.textContent = [...new Set(passwords.map(p => p.category))].length;
     statCategoryLabel.textContent = 'Categories';
   }
 
-  if (searchQuery) {
-    searchCount.textContent = `${filtered.length} result${filtered.length !== 1 ? 's' : ''}`;
-  } else {
-    searchCount.textContent = '';
-  }
+  searchCount.textContent = searchQuery
+    ? `${filtered.length} result${filtered.length !== 1 ? 's' : ''}`
+    : '';
 
   if (filtered.length === 0) {
     pwList.style.display = 'none';
@@ -264,58 +228,126 @@ function render() {
   emptyState.style.display = 'none';
 
   pwList.innerHTML = filtered.map(p => {
-    const letters   = getIconLetters(p.service);
-    const colorCls  = iconColorClass(p.service);
-    const catCls    = catColorClass(p.category);
-    const svcHtml   = highlight(p.service, searchQuery);
-    // masked password — show length-based dots
-    const dots = '•'.repeat(Math.min(p.password.length, 16));
+    const colorCls = iconColorClass(p.service);
+    const catCls   = catColorClass(p.category);
+    const svcHtml  = highlight(p.service, searchQuery);
+    const dots     = '•'.repeat(Math.min(p.password.length, 14));
+
+    // icon: photo thumbnail or letters
+    const iconContent = p.photo
+      ? `<img src="${p.photo}" alt="" loading="lazy" />`
+      : getIconLetters(p.service);
 
     return `
-      <div class="pw-card" data-id="${p.id}" tabindex="0" role="button" aria-label="${escHtml(p.service)}">
-        <div class="pw-card-icon ${colorCls}">${letters}</div>
+      <div class="pw-card" data-id="${p.id}" tabindex="0" role="button">
+        <div class="pw-card-icon ${p.photo ? '' : colorCls}">${iconContent}</div>
         <div class="pw-card-body">
-          <!-- Row 1: name + category badge -->
           <div class="pw-card-row1">
             <span class="pw-card-service">${svcHtml}</span>
             <span class="pw-cat-badge ${catCls}">${p.category}</span>
           </div>
-          <!-- Row 2: masked password -->
           <div class="pw-card-row2">
             <span class="pw-card-dots">${dots}</span>
             <div class="pw-card-actions">
-              <button class="btn-card-action" data-action="copy" data-id="${p.id}" title="Copy password">
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button class="btn-card-action" data-action="copy" data-id="${p.id}" aria-label="Copy password">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
-              <button class="btn-card-action" data-action="edit" data-id="${p.id}" title="Edit">
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button class="btn-card-action" data-action="edit" data-id="${p.id}" aria-label="Edit">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M9.5 2.5l2 2L4 12H2v-2L9.5 2.5z" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
-              <button class="btn-card-action danger" data-action="delete" data-id="${p.id}" title="Delete">
-                <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2.5h4V4M5.5 6.5v4M8.5 6.5v4M3 4l.7 7.5a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L11 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              <button class="btn-card-action danger" data-action="delete" data-id="${p.id}" aria-label="Delete">
+                <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 4h10M5 4V2.5h4V4M5.5 6.5v4M8.5 6.5v4M3 4l.7 7.5a1 1 0 0 0 1 .9h4.6a1 1 0 0 0 1-.9L11 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </button>
             </div>
           </div>
         </div>
-      </div>
-    `;
+      </div>`;
   }).join('');
 }
 
-// ─── Form ─────────────────────────────────────────
-function applyFormCategory(cat) {
-  editCatInput.value = cat;
-  const meta = CAT_META[cat] || { icon: '📁', key: cat };
-  formCatLabel.textContent = `${meta.icon} ${meta.key}`;
-  formCatLabel.style.display = '';
-  // tint panel icon
-  formPanelIcon.setAttribute('data-cat', cat);
+// ─── Category Picker ──────────────────────────────
+function openCatPicker(cb) {
+  catPickerGrid.innerHTML = CATEGORIES.map(c =>
+    `<button class="cat-pick-item" data-cat="${c.key}">
+       <span class="cat-pick-icon">${c.icon}</span>
+       <span class="cat-pick-key">${c.key}</span>
+       <span class="cat-pick-desc">${c.desc}</span>
+     </button>`
+  ).join('');
+  catPickerOverlay._cb = cb;
+  catPickerOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
+function closeCatPicker() {
+  catPickerOverlay.classList.remove('open');
+  catPickerOverlay._cb = null;
+  document.body.style.overflow = '';
+}
+
+catPickerGrid.addEventListener('click', e => {
+  const item = e.target.closest('.cat-pick-item');
+  if (!item) return;
+  const cat = item.dataset.cat;
+  const cb  = catPickerOverlay._cb;
+  closeCatPicker();
+  if (cb) cb(cat);
+});
+
+catPickerClose.addEventListener('click', closeCatPicker);
+catPickerOverlay.addEventListener('click', e => {
+  if (e.target === catPickerOverlay) closeCatPicker();
+});
+
+// ─── Photo handling ───────────────────────────────
+function setPhotoPreview(dataUrl) {
+  currentPhotoDataUrl = dataUrl;
+  if (dataUrl) {
+    photoPreview.innerHTML = `<img src="${dataUrl}" alt="preview" />`;
+    photoPreview.classList.add('has-photo');
+    photoRemove.style.display = '';
+  } else {
+    photoPreview.innerHTML = `
+      <svg width="28" height="28" viewBox="0 0 28 28" fill="none"><rect x="2" y="5" width="24" height="18" rx="4" stroke="currentColor" stroke-width="1.5"/><circle cx="14" cy="14" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M2 10h4l2-3h8l2 3h4" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      <span>Add Photo</span>`;
+    photoPreview.classList.remove('has-photo');
+    photoRemove.style.display = 'none';
+  }
+}
+
+photoPreview.addEventListener('click', () => photoInput.click());
+
+photoInput.addEventListener('change', () => {
+  const file = photoInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    // compress to max 800px wide
+    const img = new Image();
+    img.onload = () => {
+      const maxW = 800;
+      const scale = img.width > maxW ? maxW / img.width : 1;
+      const canvas = document.createElement('canvas');
+      canvas.width  = Math.round(img.width  * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+      setPhotoPreview(canvas.toDataURL('image/jpeg', 0.75));
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  photoInput.value = '';
+});
+
+photoRemove.addEventListener('click', () => setPhotoPreview(null));
+
+// ─── Form sheet ───────────────────────────────────
 function openForm(id = null, cat = null) {
   editingId = id;
   formPwVisible = false;
   inputPassword.type = 'password';
   updateEyeIcon(btnTogglePw, false);
+  currentPhotoDataUrl = null;
 
   if (id) {
     const p = passwords.find(x => x.id === id);
@@ -323,11 +355,12 @@ function openForm(id = null, cat = null) {
     formTitle.textContent   = 'Edit Entry';
     editIdInput.value       = id;
     inputService.value      = p.service;
-    inputUrl.value          = p.url || '';
+    inputUrl.value          = p.url      || '';
     inputUsername.value     = p.username || '';
     inputPassword.value     = p.password;
-    inputNote.value         = p.note || '';
-    applyFormCategory(p.category);
+    inputNote.value         = p.note     || '';
+    applyFormCat(p.category);
+    setPhotoPreview(p.photo || null);
   } else {
     formTitle.textContent   = 'New Entry';
     editIdInput.value       = '';
@@ -336,16 +369,26 @@ function openForm(id = null, cat = null) {
     inputUsername.value     = '';
     inputPassword.value     = '';
     inputNote.value         = '';
-    applyFormCategory(cat || 'Other');
+    applyFormCat(cat || 'Other');
+    setPhotoPreview(null);
   }
 
   updateStrengthUI();
-  formPanel.classList.add('open');
-  setTimeout(() => inputService.focus(), 60);
+  formOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
+  setTimeout(() => inputService.focus(), 350);
+}
+
+function applyFormCat(cat) {
+  editCatInput.value = cat;
+  const meta = CAT_META[cat] || { icon: '📁', key: cat };
+  formCatIcon.textContent  = meta.icon;
+  formCatBadge.textContent = meta.key;
 }
 
 function closeForm() {
-  formPanel.classList.remove('open');
+  formOverlay.classList.remove('open');
+  document.body.style.overflow = '';
   editingId = null;
 }
 
@@ -363,11 +406,12 @@ function saveEntry() {
       passwords[idx] = {
         ...passwords[idx],
         service,
-        url: inputUrl.value.trim(),
+        url:      inputUrl.value.trim(),
         username: inputUsername.value.trim(),
         password,
-        note: inputNote.value.trim(),
+        note:     inputNote.value.trim(),
         category,
+        photo:    currentPhotoDataUrl !== null ? currentPhotoDataUrl : passwords[idx].photo,
         updatedAt: Date.now(),
       };
       showToast('Updated ✓');
@@ -376,11 +420,12 @@ function saveEntry() {
     passwords.unshift({
       id: uid(),
       service,
-      url: inputUrl.value.trim(),
+      url:      inputUrl.value.trim(),
       username: inputUsername.value.trim(),
       password,
-      note: inputNote.value.trim(),
+      note:     inputNote.value.trim(),
       category,
+      photo:    currentPhotoDataUrl || null,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -392,26 +437,36 @@ function saveEntry() {
   closeForm();
 }
 
-// ─── Modal (detail) ───────────────────────────────
+// ─── Detail sheet ─────────────────────────────────
 function openModal(id) {
   const p = passwords.find(x => x.id === id);
   if (!p) return;
   currentModalId = id;
   modalPwVisible = false;
 
-  const letters  = getIconLetters(p.service);
   const colorCls = iconColorClass(p.service);
-  modalIcon.textContent = letters;
-  modalIcon.className   = `modal-service-icon ${colorCls}`;
+  if (p.photo) {
+    modalIcon.innerHTML = `<img src="${p.photo}" alt="" style="width:100%;height:100%;object-fit:cover;border-radius:10px;" />`;
+    modalIcon.className = 'modal-service-icon';
+  } else {
+    modalIcon.textContent = getIconLetters(p.service);
+    modalIcon.className   = `modal-service-icon ${colorCls}`;
+  }
 
   modalService.textContent  = p.service;
   modalUrl.textContent      = p.url || '—';
   modalUsername.textContent = p.username || '—';
   modalPassword.textContent = '••••••••••';
-  modalPassword.style.letterSpacing = '3px';
+  modalPassword.style.letterSpacing = '4px';
   modalPassword.dataset.real = p.password;
-
   updateEyeIcon(modalTogglePw, false);
+
+  if (p.photo) {
+    modalPhoto.src = p.photo;
+    modalPhotoWrap.style.display = '';
+  } else {
+    modalPhotoWrap.style.display = 'none';
+  }
 
   if (p.note) {
     modalNote.textContent = p.note;
@@ -426,17 +481,21 @@ function openModal(id) {
   modalDate.textContent = formatDate(p.createdAt);
 
   modalOverlay.classList.add('open');
+  document.body.style.overflow = 'hidden';
 }
 
 function closeModal() {
   modalOverlay.classList.remove('open');
+  document.body.style.overflow = '';
   currentModalId = null;
   modalPwVisible = false;
 }
 
 // ─── Export ───────────────────────────────────────
 function exportData() {
-  const blob = new Blob([JSON.stringify(passwords, null, 2)], { type: 'application/json' });
+  // export without photo data to keep size small (optional: include photos)
+  const data = passwords.map(p => ({ ...p, photo: p.photo ? '[photo attached]' : null }));
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement('a');
   a.href = url;
@@ -447,36 +506,42 @@ function exportData() {
 }
 
 // ─── Copy ─────────────────────────────────────────
-async function copyText(text, label = 'Copied') {
+async function copyText(text, label) {
   try {
     await navigator.clipboard.writeText(text);
     showToast(`${label} ✓`);
   } catch {
-    showToast('Copy failed — check permissions.');
+    // fallback for older mobile browsers
+    const el = document.createElement('textarea');
+    el.value = text;
+    el.style.cssText = 'position:fixed;opacity:0;top:0;left:0;';
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showToast(`${label} ✓`);
   }
 }
 
 // ─── Events ───────────────────────────────────────
-
-// "New" button → category picker → form
-function triggerNewEntry() {
+function triggerNew() {
   openCatPicker(cat => openForm(null, cat));
 }
 
-btnAdd.addEventListener('click', triggerNewEntry);
-emptyAddBtn.addEventListener('click', triggerNewEntry);
+btnAdd.addEventListener('click', triggerNew);
+emptyAddBtn.addEventListener('click', triggerNew);
+btnExport.addEventListener('click', exportData);
 
-// Close form
+// Form
 btnCloseForm.addEventListener('click', closeForm);
 btnCancel.addEventListener('click', closeForm);
-
-// Save
 btnSave.addEventListener('click', saveEntry);
-[inputService, inputUrl, inputUsername, inputPassword].forEach(el => {
-  el.addEventListener('keydown', e => { if (e.key === 'Enter') saveEntry(); });
+
+formOverlay.addEventListener('click', e => {
+  if (e.target === formOverlay) closeForm();
 });
 
-// PW toggle (form)
+// pw toggle form
 btnTogglePw.addEventListener('click', () => {
   formPwVisible = !formPwVisible;
   inputPassword.type = formPwVisible ? 'text' : 'password';
@@ -495,7 +560,7 @@ filterTabs.addEventListener('click', e => {
   render();
 });
 
-// PW list delegation
+// pw list delegation
 pwList.addEventListener('click', e => {
   const action = e.target.closest('[data-action]');
   if (action) {
@@ -506,8 +571,7 @@ pwList.addEventListener('click', e => {
     if (action.dataset.action === 'copy') {
       copyText(p.password, 'Password copied');
     } else if (action.dataset.action === 'edit') {
-      closeModal();
-      openForm(id);
+      closeModal(); openForm(id);
     } else if (action.dataset.action === 'delete') {
       if (confirm(`Delete "${p.service}"?`)) {
         passwords = passwords.filter(x => x.id !== id);
@@ -521,13 +585,6 @@ pwList.addEventListener('click', e => {
   if (card) openModal(card.dataset.id);
 });
 
-pwList.addEventListener('keydown', e => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    const card = e.target.closest('.pw-card');
-    if (card) { e.preventDefault(); openModal(card.dataset.id); }
-  }
-});
-
 // Search
 searchInput.addEventListener('input', () => {
   searchQuery = searchInput.value;
@@ -539,32 +596,19 @@ searchClear.addEventListener('click', () => {
   searchInput.value = '';
   searchQuery = '';
   searchClear.style.display = 'none';
-  searchInput.focus();
   render();
-});
-
-// Shortcuts
-document.addEventListener('keydown', e => {
-  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
-    e.preventDefault();
-    searchInput.focus();
-    searchInput.select();
-  }
-  if (e.key === 'Escape') {
-    closeCatPicker();
-    closeModal();
-    closeForm();
-  }
 });
 
 // Detail modal
 modalClose.addEventListener('click', closeModal);
-modalOverlay.addEventListener('click', e => { if (e.target === modalOverlay) closeModal(); });
+modalOverlay.addEventListener('click', e => {
+  if (e.target === modalOverlay) closeModal();
+});
 
 modalTogglePw.addEventListener('click', () => {
   modalPwVisible = !modalPwVisible;
   modalPassword.textContent = modalPwVisible ? modalPassword.dataset.real : '••••••••••';
-  modalPassword.style.letterSpacing = modalPwVisible ? 'normal' : '3px';
+  modalPassword.style.letterSpacing = modalPwVisible ? 'normal' : '4px';
   updateEyeIcon(modalTogglePw, modalPwVisible);
 });
 
@@ -579,8 +623,7 @@ document.querySelectorAll('.btn-copy').forEach(btn => {
 
 btnModalEdit.addEventListener('click', () => {
   const id = currentModalId;
-  closeModal();
-  openForm(id);
+  closeModal(); openForm(id);
 });
 
 btnModalDelete.addEventListener('click', () => {
@@ -593,7 +636,13 @@ btnModalDelete.addEventListener('click', () => {
   }
 });
 
-btnExport.addEventListener('click', exportData);
+// Keyboard (tablet with keyboard)
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') { closeCatPicker(); closeModal(); closeForm(); }
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault(); searchInput.focus(); searchInput.select();
+  }
+});
 
 // ─── Init ─────────────────────────────────────────
 render();
