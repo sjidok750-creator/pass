@@ -48,10 +48,8 @@
       <button class="filter-tab active" data-filter="All">All</button>
       <button class="filter-tab" data-filter="Finance">Finance</button>
       <button class="filter-tab" data-filter="Website">Website</button>
-      <button class="filter-tab" data-filter="Shopping">Shopping</button>
-      <button class="filter-tab" data-filter="Game">Game</button>
-      <button class="filter-tab" data-filter="Coding">Coding</button>
-      <button class="filter-tab" data-filter="Social">Social</button>
+      <button class="filter-tab" data-filter="App">App</button>
+      <button class="filter-tab" data-filter="OTT">OTT</button>
       <button class="filter-tab" data-filter="Other">Other</button>
     </div>
   </div>
@@ -107,29 +105,32 @@
           <div class="type-chips" id="typeChips">
             <button class="type-chip" data-cat="Finance">💳 Finance</button>
             <button class="type-chip" data-cat="Website">🌐 Website</button>
-            <button class="type-chip" data-cat="Shopping">🛒 Shopping</button>
-            <button class="type-chip" data-cat="Game">🎮 Game</button>
-            <button class="type-chip" data-cat="Coding">💻 Coding</button>
-            <button class="type-chip" data-cat="Social">💬 Social</button>
+            <button class="type-chip" data-cat="App">📱 App</button>
+            <button class="type-chip" data-cat="OTT">🎬 OTT</button>
             <button class="type-chip active" data-cat="Other">📁 Other</button>
           </div>
         </div>
 
-        <!-- ② 항목 이름 -->
+        <!-- ② 입력 내용 -->
         <div class="form-field">
           <label class="field-label" for="inputService">Name</label>
           <input type="text" class="field-input" id="inputService"
-            placeholder="Service or app name" autocomplete="off" />
+            placeholder="서비스 또는 앱 이름" autocomplete="off" />
         </div>
 
-        <!-- ③ 비밀번호 -->
+        <!-- ③ 아이디 -->
+        <div class="form-field">
+          <label class="field-label" for="inputUsername">ID / Email</label>
+          <input type="text" class="field-input" id="inputUsername"
+            placeholder="아이디 또는 이메일" autocomplete="off" autocapitalize="none" />
+        </div>
+
+        <!-- ④ 비밀번호 -->
         <div class="form-field">
           <label class="field-label" for="inputPassword">Password</label>
-          <div class="pw-input-wrap">
-            <input type="text" class="field-input pw-field" id="inputPassword"
-              placeholder="Enter password" autocomplete="new-password" autocorrect="off"
-              autocapitalize="none" spellcheck="false" />
-          </div>
+          <input type="text" class="field-input pw-field" id="inputPassword"
+            placeholder="비밀번호" autocomplete="new-password" autocorrect="off"
+            autocapitalize="none" spellcheck="false" />
           <div class="pw-strength-row">
             <div class="pw-strength-bar"><div class="pw-strength-fill" id="pwStrengthFill"></div></div>
             <span class="pw-strength-label" id="pwStrengthLabel"></span>

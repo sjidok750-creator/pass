@@ -5,13 +5,11 @@
 
 // ─── Category meta ────────────────────────────────
 const CAT_COLORS = {
-  Finance:  '#16a34a',
-  Website:  '#2563eb',
-  Shopping: '#c2410c',
-  Game:     '#db2777',
-  Coding:   '#7c3aed',
-  Social:   '#0d9488',
-  Other:    '#5e6a82',
+  Finance: '#16a34a',
+  Website: '#2563eb',
+  App:     '#7c3aed',
+  OTT:     '#e11d48',
+  Other:   '#5e6a82',
 };
 
 // ─── State ────────────────────────────────────────
@@ -43,6 +41,7 @@ const editIdInput   = $('editId');
 const editCatInput  = $('editCategory');
 const typeChips     = $('typeChips');
 const inputService  = $('inputService');
+const inputUsername = $('inputUsername');
 const inputPassword = $('inputPassword');
 const pwStrengthFill  = $('pwStrengthFill');
 const pwStrengthLabel = $('pwStrengthLabel');
@@ -173,6 +172,7 @@ function render() {
   pwList.innerHTML = filtered.map(p => {
     const color    = CAT_COLORS[p.category] || '#5e6a82';
     const nameHtml = highlight(p.service, searchQuery);
+    const idHtml   = p.username ? highlight(p.username, searchQuery) : '<span class="card-empty">—</span>';
 
     const dotHtml = p.photo
       ? `<img src="${p.photo}" class="card-dot-photo" alt="" />`
@@ -180,12 +180,18 @@ function render() {
 
     return `
       <div class="pw-card" data-id="${p.id}" role="button" tabindex="0">
-        <div class="card-single-row">
+        <!-- 윗줄: 색 점 + 서비스명 -->
+        <div class="card-row-top">
           ${dotHtml}
           <span class="card-name">${nameHtml}</span>
-          <span class="card-pw-inline">${escHtml(p.password)}</span>
+        </div>
+        <!-- 아랫줄: 아이디 · 비번 · 복사 -->
+        <div class="card-row-bot">
+          <span class="card-id">${idHtml}</span>
+          <span class="card-sep">·</span>
+          <span class="card-pw">${escHtml(p.password)}</span>
           <button class="btn-copy-card" data-action="copy-both" data-id="${p.id}" aria-label="Copy">
-            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+            <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
           </button>
         </div>
       </div>`;
@@ -243,6 +249,7 @@ function openForm(id = null) {
     formTitle.textContent  = 'Edit Entry';
     editIdInput.value      = id;
     inputService.value     = p.service;
+    inputUsername.value    = p.username || '';
     inputPassword.value    = p.password;
     setActiveCat(p.category);
     setPhoto(p.photo || null);
@@ -250,6 +257,7 @@ function openForm(id = null) {
     formTitle.textContent  = 'New Entry';
     editIdInput.value      = '';
     inputService.value     = '';
+    inputUsername.value    = '';
     inputPassword.value    = '';
     setActiveCat('Other');
     setPhoto(null);
@@ -276,6 +284,7 @@ function closeForm() {
 
 function saveEntry() {
   const service  = inputService.value.trim();
+  const username = inputUsername.value.trim();
   const password = inputPassword.value.trim();
   const category = editCatInput.value || 'Other';
 
@@ -287,7 +296,7 @@ function saveEntry() {
     if (idx !== -1) {
       const prev = passwords[idx];
       passwords[idx] = {
-        ...prev, service, password, category,
+        ...prev, service, username, password, category,
         photo: currentPhotoData !== null ? currentPhotoData : (prev.photo || null),
         updatedAt: Date.now(),
       };
@@ -295,8 +304,8 @@ function saveEntry() {
     }
   } else {
     passwords.unshift({
-      id: uid(), service, password, category,
-      username: '', url: '', note: '',
+      id: uid(), service, username, password, category,
+      url: '', note: '',
       photo: currentPhotoData || null,
       createdAt: Date.now(),
       updatedAt: Date.now(),

@@ -196,7 +196,7 @@ input, textarea {
 }
 
 /* ══════════════════════════════════════════
-   PASSWORD CARD  (single-row)
+   PASSWORD CARD  (2-row)
 ══════════════════════════════════════════ */
 .pw-list {
   padding: 12px 12px 8px;
@@ -216,14 +216,12 @@ input, textarea {
 
 .pw-card:active { opacity: .82; }
 
-/* ── Single row ──────────────────────────── */
-.card-single-row {
+/* ── 윗줄: 색 점 + 서비스명 ──────────────── */
+.card-row-top {
   display: flex;
   align-items: center;
-  height: 52px;           /* 고정 높이 → 모든 카드 동일 */
-  padding: 0 13px;
-  gap: 9px;
-  background: var(--surface);
+  padding: 9px 13px 5px;
+  gap: 8px;
 }
 
 /* 컬러 점 */
@@ -248,28 +246,55 @@ input, textarea {
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
 
-/* 비밀번호 — 고정 너비 영역으로 정렬감 유지 */
-.card-pw-inline {
-  flex: 0 0 auto;
-  width: 130px;            /* 고정 너비 → 항상 같은 자리 */
+/* ── 아랫줄: 아이디 · 비번 · 복사 ──────────── */
+.card-row-bot {
+  display: flex;
+  align-items: center;
+  padding: 5px 13px 9px;
+  gap: 5px;
+  background: #fff8f8;
+  border-top: 1px solid rgba(255,107,107,.1);
+}
+
+/* 아이디 */
+.card-id {
   font-family: var(--font-mono);
-  font-size: 12.5px; font-weight: 500;
+  font-size: 11.5px; font-weight: 400;
+  color: var(--text-3);
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  min-width: 0; flex: 0 1 auto;
+  max-width: 38%;
+}
+
+.card-empty { color: var(--gray-300); }
+
+/* 구분점 */
+.card-sep {
+  font-family: var(--font-mono);
+  font-size: 11px; color: var(--gray-300);
+  flex-shrink: 0;
+}
+
+/* 비밀번호 — 고정 너비로 정렬감 유지 */
+.card-pw {
+  flex: 1; min-width: 0;
+  font-family: var(--font-mono);
+  font-size: 12.5px; font-weight: 600;
   color: var(--coral);
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   letter-spacing: .4px;
-  text-align: right;
-  padding-right: 2px;
 }
 
 /* 복사 버튼 (1개) */
 .btn-copy-card {
-  width: 32px; height: 32px;
+  width: 30px; height: 30px;
   border-radius: 7px;
   background: var(--coral-light);
   border: 1.5px solid rgba(255,107,107,.25);
   color: var(--coral);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
+  margin-left: 2px;
 }
 
 .btn-copy-card:active {
@@ -488,12 +513,10 @@ input, textarea {
 }
 
 /* chip active colours */
-.type-chip.active[data-cat="Finance"]  { background: var(--c-finance); }
-.type-chip.active[data-cat="Website"]  { background: var(--c-website); }
-.type-chip.active[data-cat="Shopping"] { background: var(--c-shopping); }
-.type-chip.active[data-cat="Game"]     { background: var(--c-game); }
-.type-chip.active[data-cat="Coding"]   { background: var(--c-coding); }
-.type-chip.active[data-cat="Social"]   { background: var(--c-social); }
+.type-chip.active[data-cat="Finance"]  { background: #16a34a; }
+.type-chip.active[data-cat="Website"]  { background: #2563eb; }
+.type-chip.active[data-cat="App"]      { background: #7c3aed; }
+.type-chip.active[data-cat="OTT"]      { background: #e11d48; }
 .type-chip.active[data-cat="Other"]    { background: var(--c-other); }
 
 /* field input */
@@ -734,9 +757,11 @@ input, textarea {
   .filter-tabs { padding: 0 20px; }
   .pw-list { padding: 16px 20px; gap: 10px; }
 
-  .card-single-row { height: 56px; padding: 0 16px; gap: 11px; }
+  .card-row-top { padding: 10px 16px 6px; }
+  .card-row-bot { padding: 6px 16px 10px; }
   .card-name { font-size: 15px; }
-  .card-pw-inline { width: 150px; font-size: 13px; }
+  .card-pw { font-size: 13px; }
+  .card-id { font-size: 12px; }
 
   .type-chips { gap: 8px; }
   .type-chip  { height: 36px; font-size: 13px; }
