@@ -174,28 +174,19 @@ function render() {
     const color    = CAT_COLORS[p.category] || '#5e6a82';
     const nameHtml = highlight(p.service, searchQuery);
 
-    // row1 icon: photo or colour dot
     const dotHtml = p.photo
-      ? `<img src="${p.photo}" style="width:10px;height:10px;border-radius:2px;object-fit:cover;" alt="" />`
+      ? `<img src="${p.photo}" class="card-dot-photo" alt="" />`
       : `<span class="card-color-dot" style="background:${color}"></span>`;
 
     return `
       <div class="pw-card" data-id="${p.id}" role="button" tabindex="0">
-        <div class="card-row1">
+        <div class="card-single-row">
           ${dotHtml}
           <span class="card-name">${nameHtml}</span>
-          <span class="card-cat-box cat-box-${p.category}" style="background:${color}">${catShort(p.category)}</span>
-        </div>
-        <div class="card-row2">
-          <span class="card-pw">${escHtml(p.password)}</span>
-          <div class="card-copy-btns">
-            <button class="btn-copy-card" data-action="copy-pw" data-id="${p.id}" aria-label="Copy password">
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-            </button>
-            <button class="btn-copy-card" data-action="copy-id" data-id="${p.id}" aria-label="Copy ID">
-              <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><circle cx="7" cy="5" r="2.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 12c0-2.8 2.2-4.5 5-4.5s5 1.7 5 4.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
-            </button>
-          </div>
+          <span class="card-pw-inline">${escHtml(p.password)}</span>
+          <button class="btn-copy-card" data-action="copy-both" data-id="${p.id}" aria-label="Copy">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </button>
         </div>
       </div>`;
   }).join('');
@@ -425,8 +416,12 @@ pwList.addEventListener('click', e => {
     const id = action.dataset.id;
     const p  = passwords.find(x => x.id === id);
     if (!p) return;
-    if (action.dataset.action === 'copy-pw') copyText(p.password, 'Password copied');
-    if (action.dataset.action === 'copy-id') copyText(p.username || p.service, 'ID copied');
+    if (action.dataset.action === 'copy-pw')   copyText(p.password, 'Password copied');
+    if (action.dataset.action === 'copy-id')   copyText(p.username || p.service, 'ID copied');
+    if (action.dataset.action === 'copy-both') {
+      const text = [p.username || p.service, p.password].filter(Boolean).join('\n');
+      copyText(text, 'Copied');
+    }
     return;
   }
   const card = e.target.closest('.pw-card');
