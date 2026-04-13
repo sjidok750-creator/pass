@@ -1,0 +1,16 @@
+{
+  "name": "Pass Note",
+  "short_name": "PassNote",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#d91e35",
+  "theme_color": "#d91e35",
+  "icons": [
+    {
+      "src": "icon.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
