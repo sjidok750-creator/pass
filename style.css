@@ -287,6 +287,19 @@ input, textarea {
   text-align: right;
 }
 
+/* 대문자 표시 */
+.pw-char { position: relative; display: inline-block; }
+.pw-upper::after {
+  content: '';
+  position: absolute;
+  bottom: -3px; left: 50%;
+  transform: translateX(-50%);
+  width: 3px; height: 3px;
+  border-radius: 50%;
+  background: var(--coral);
+  opacity: .7;
+}
+
 /* 복사 버튼 (1개) */
 .btn-copy-card {
   width: 30px; height: 30px;

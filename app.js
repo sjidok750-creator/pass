@@ -137,6 +137,15 @@ function highlight(text, q) {
   );
 }
 
+function pwHtml(pw) {
+  return [...String(pw)].map(ch => {
+    const upper = /[A-Z]/.test(ch);
+    return upper
+      ? `<span class="pw-char pw-upper">${escHtml(ch)}</span>`
+      : `<span class="pw-char">${escHtml(ch)}</span>`;
+  }).join('');
+}
+
 function catShort(cat) {
   const map = { Finance:'FIN', Website:'WEB', Shopping:'SHOP', Game:'GAME', Coding:'DEV', Social:'SOC', Other:'ETC' };
   return map[cat] || cat.slice(0,3).toUpperCase();
@@ -367,7 +376,7 @@ function render() {
         <div class="card-row-bot">
           <span class="card-id">${idHtml}</span>
           <span class="card-sep">·</span>
-          <span class="card-pw">${escHtml(p.password)}</span>
+          <span class="card-pw">${pwHtml(p.password)}</span>
           <button class="btn-copy-card" data-action="copy-both" data-id="${p.id}" aria-label="Copy">
             <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><rect x="4" y="4" width="8" height="8" rx="1.5" stroke="currentColor" stroke-width="1.4"/><path d="M2 10V2h8" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
           </button>
