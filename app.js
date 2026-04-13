@@ -70,6 +70,7 @@ const typeChips     = $('typeChips');
 const inputService  = $('inputService');
 const inputUsername = $('inputUsername');
 const inputPassword = $('inputPassword');
+const inputNote     = $('inputNote');
 const pwStrengthFill  = $('pwStrengthFill');
 const pwStrengthLabel = $('pwStrengthLabel');
 const photoThumb    = $('photoThumb');
@@ -242,6 +243,7 @@ async function saveEntry() {
   const service  = inputService.value.trim();
   const username = inputUsername.value.trim();
   const password = inputPassword.value.trim();
+  const note     = inputNote.value.trim();
   const category = editCatInput.value || 'Other';
 
   if (!service)  { inputService.focus();  showToast('Name is required.'); return; }
@@ -252,15 +254,15 @@ async function saveEntry() {
       const existing = passwords.find(p => p.id === editingId);
       const docRef = doc(db, 'passwords', editingId);
       await updateDoc(docRef, {
-        service, username, password, category,
+        service, username, password, category, note,
         photo: currentPhotoData !== null ? currentPhotoData : (existing?.photo || null),
         updatedAt: Date.now(),
       });
       showToast('Updated ✓');
     } else {
       await addDoc(passwordsCol(), {
-        service, username, password, category,
-        url: '', note: '',
+        service, username, password, category, note,
+        url: '',
         photo: currentPhotoData || null,
         createdAt: Date.now(),
         updatedAt: Date.now(),
@@ -457,6 +459,7 @@ function openForm(id = null) {
     inputService.value     = p.service;
     inputUsername.value    = p.username || '';
     inputPassword.value    = p.password;
+    inputNote.value        = p.note || '';
     setActiveCat(p.category);
     setPhoto(p.photo || null);
   } else {
@@ -465,6 +468,7 @@ function openForm(id = null) {
     inputService.value     = '';
     inputUsername.value    = '';
     inputPassword.value    = '';
+    inputNote.value        = '';
     setActiveCat('Other');
     setPhoto(null);
   }
@@ -512,7 +516,7 @@ function openModal(id) {
   $('modalUpdated').textContent = formatDate(p.updatedAt || p.createdAt);
 
   if (p.note) {
-    modalNote.textContent      = p.note;
+    modalNote.textContent       = p.note;
     detailNoteRow.style.display = '';
   } else {
     detailNoteRow.style.display = 'none';

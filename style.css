@@ -553,6 +553,13 @@ input, textarea {
 
 .field-input::placeholder { color: var(--text-3); font-family: var(--font-kr); font-size: 14px; }
 
+.field-textarea {
+  height: auto; padding: 12px 14px;
+  resize: vertical; min-height: 48px;
+  line-height: 1.5;
+  font-family: var(--font-kr);
+}
+
 .pw-field {
   color: var(--coral); font-weight: 600; letter-spacing: .4px;
   /* 깊이감: 배경을 살짝 다르게 + inset 그림자 */
