@@ -100,6 +100,47 @@ const loginPwInput = $('loginPwInput');
 const btnLoginSubmit = $('btnLoginSubmit');
 const loginError = $('loginError');
 const APP_PIN = '1235';
+let cryptoKey = null; // derived from PIN
+
+// ─── Crypto (AES-GCM) ────────────────────────────
+async function deriveKey(pin) {
+  const enc = new TextEncoder();
+  const keyMaterial = await crypto.subtle.importKey(
+    'raw', enc.encode(pin), 'PBKDF2', false, ['deriveKey']
+  );
+  return crypto.subtle.deriveKey(
+    { name: 'PBKDF2', salt: enc.encode('passnote-salt-v1'), iterations: 100000, hash: 'SHA-256' },
+    keyMaterial,
+    { name: 'AES-GCM', length: 256 },
+    false,
+    ['encrypt', 'decrypt']
+  );
+}
+
+async function encrypt(text) {
+  if (!text) return '';
+  const enc = new TextEncoder();
+  const iv = crypto.getRandomValues(new Uint8Array(12));
+  const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, cryptoKey, enc.encode(text));
+  const buf = new Uint8Array(iv.byteLength + ct.byteLength);
+  buf.set(iv);
+  buf.set(new Uint8Array(ct), iv.byteLength);
+  return btoa(String.fromCharCode(...buf));
+}
+
+async function decrypt(b64) {
+  if (!b64) return '';
+  try {
+    const raw = Uint8Array.from(atob(b64), c => c.charCodeAt(0));
+    const iv = raw.slice(0, 12);
+    const ct = raw.slice(12);
+    const pt = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, cryptoKey, ct);
+    return new TextDecoder().decode(pt);
+  } catch {
+    // Not encrypted (legacy plain text) — return as-is
+    return b64;
+  }
+}
 
 // ─── Utils ────────────────────────────────────────
 let toastTimer;
@@ -198,8 +239,8 @@ async function tryLogin() {
   if (val === APP_PIN) {
     loginError.style.display = 'none';
     try {
+      cryptoKey = await deriveKey(val);
       if (currentUser) {
-        // Already signed in anonymously (cached), just unlock
         unlockApp(currentUser);
       } else {
         const cred = await signInAnonymously(auth);
@@ -229,8 +270,16 @@ function passwordsCol() {
 
 function listenPasswords() {
   if (unsubscribe) unsubscribe();
-  unsubscribe = onSnapshot(passwordsCol(), (snap) => {
-    passwords = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  unsubscribe = onSnapshot(passwordsCol(), async (snap) => {
+    const docs = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    // Decrypt sensitive fields
+    passwords = await Promise.all(docs.map(async p => ({
+      ...p,
+      service:  await decrypt(p.service),
+      username: await decrypt(p.username),
+      password: await decrypt(p.password),
+      note:     await decrypt(p.note || ''),
+    })));
     passwords.sort((a, b) => (b.updatedAt || b.createdAt || 0) - (a.updatedAt || a.createdAt || 0));
     render();
   }, (err) => {
@@ -249,19 +298,27 @@ async function saveEntry() {
   if (!service)  { inputService.focus();  showToast('Name is required.'); return; }
   if (!password) { inputPassword.focus(); showToast('Password is required.'); return; }
 
+  // Encrypt sensitive fields
+  const encService  = await encrypt(service);
+  const encUsername  = await encrypt(username);
+  const encPassword  = await encrypt(password);
+  const encNote      = await encrypt(note);
+
   try {
     if (editingId) {
       const existing = passwords.find(p => p.id === editingId);
       const docRef = doc(db, 'passwords', editingId);
       await updateDoc(docRef, {
-        service, username, password, category, note,
+        service: encService, username: encUsername, password: encPassword,
+        category, note: encNote,
         photo: currentPhotoData !== null ? currentPhotoData : (existing?.photo || null),
         updatedAt: Date.now(),
       });
       showToast('Updated ✓');
     } else {
       await addDoc(passwordsCol(), {
-        service, username, password, category, note,
+        service: encService, username: encUsername, password: encPassword,
+        category, note: encNote,
         url: '',
         photo: currentPhotoData || null,
         createdAt: Date.now(),
